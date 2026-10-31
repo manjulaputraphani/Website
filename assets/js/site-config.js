@@ -9,7 +9,7 @@
    ============================================================ */
 
 window.SITE_CONFIG = {
-  businessName: "Sri Durga Hari Hara Enterprises",
+  businessName: "Sri Durga HariHara Enterprises",
 
   email: "sridurgahariharaenterprises@gmail.com",
   phoneDisplay: "+91\u00A075692\u00A008757",
@@ -27,6 +27,6 @@ window.SITE_CONFIG = {
     ajaxEndpoint: "https://formsubmit.co/ajax/sridurgahariharaenterprises@gmail.com",
     // Standard endpoint used when JavaScript is unavailable.
     fallbackEndpoint: "https://formsubmit.co/sridurgahariharaenterprises@gmail.com",
-    subject: "New trade enquiry — Sri Durga Hari Hara Enterprises"
+    subject: "New trade enquiry — Sri Durga HariHara Enterprises"
   }
 };

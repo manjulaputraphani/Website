@@ -1,5 +1,5 @@
 /* ============================================================
-   Sri Durga Hari Hara Enterprises — interactions
+   Sri Durga HariHara Enterprises — interactions
    Vanilla JavaScript. No dependencies.
    ============================================================ */
 (function () {
@@ -451,7 +451,7 @@
       var value = field && field.value ? field.value.trim() : '';
       return value ? pair[0] + ': ' + value : null;
     }).filter(Boolean);
-    lines.unshift('Trade enquiry — Sri Durga Hari Hara Enterprises', '');
+    lines.unshift('Trade enquiry — Sri Durga HariHara Enterprises', '');
     lines.push('', 'Sent from the website enquiry form.');
     var subject = (config.form && config.form.subject) || 'Trade enquiry';
     return 'mailto:' + config.email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
