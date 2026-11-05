@@ -116,7 +116,8 @@ in `localStorage` and restored on the next visit.
 - WebP photography with responsive `srcset` variants
 - Hero image priority loading
 - Lazy loading for below-the-fold images
-- No external JavaScript, analytics or tracking
+- No third-party JavaScript or tracking cookies; privacy-first Cloudflare Web
+  Analytics (cookieless) for aggregate visitor counts
 - Long-lived Cloudflare caching for fonts and images; shorter revalidation for
   stylesheets and scripts
 - Lighthouse on the live site: **93 performance, 100 accessibility,
