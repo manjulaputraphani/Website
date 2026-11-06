@@ -79,51 +79,52 @@ export async function onRequestPost(context) {
       verification = await verifySessionPass(body.sessionPass, sessionId, env);
     }
 
+    if (!verification && env.ALLOW_UNVERIFIED_CHAT === "true") {
+      // Temporary test mode. Remove this flag once the real Turnstile
+      // site key and secret are both configured.
+      verification = { sid: sessionId };
+    }
+
     if (!verification) {
       const turnstileToken = typeof body.turnstileToken === "string" ? body.turnstileToken : "";
       if (!turnstileToken) {
-        if (env.ALLOW_UNVERIFIED_CHAT === "true" && !env.TURNSTILE_SECRET_KEY) {
-          verification = { sid: sessionId };
-        } else {
-          return jsonResponse(
-            {
-              ok: false,
-              error: "verification_required",
-              message: "Please complete the verification before sending a message."
-            },
-            403,
-            request,
-            env
-          );
-        }
-      } else {
-        if (!env.TURNSTILE_SECRET_KEY) {
-          return jsonResponse(
-            {
-              ok: false,
-              error: "verification_not_configured",
-              message: "Chat verification is not configured yet."
-            },
-            503,
-            request,
-            env
-          );
-        }
-        const passed = await verifyTurnstile(turnstileToken, ip, env);
-        if (!passed) {
-          return jsonResponse(
-            {
-              ok: false,
-              error: "verification_failed",
-              message: "Verification did not pass. Please try again."
-            },
-            403,
-            request,
-            env
-          );
-        }
-        verification = { sid: sessionId };
+        return jsonResponse(
+          {
+            ok: false,
+            error: "verification_required",
+            message: "Please complete the verification before sending a message."
+          },
+          403,
+          request,
+          env
+        );
       }
+      if (!env.TURNSTILE_SECRET_KEY) {
+        return jsonResponse(
+          {
+            ok: false,
+            error: "verification_not_configured",
+            message: "Chat verification is not configured yet."
+          },
+          503,
+          request,
+          env
+        );
+      }
+      const passed = await verifyTurnstile(turnstileToken, ip, env);
+      if (!passed) {
+        return jsonResponse(
+          {
+            ok: false,
+            error: "verification_failed",
+            message: "Verification did not pass. Please try again."
+          },
+          403,
+          request,
+          env
+        );
+      }
+      verification = { sid: sessionId };
     }
 
     try {
