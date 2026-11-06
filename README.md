@@ -979,6 +979,12 @@ deploying.
   or a different deployment path.
 - **CSS:** `chamundi.js` injects `chamundi.css` automatically. You can also add
   a normal stylesheet link and set `data-css` to its URL.
+- **Brand symbol:** the Shatkona (two interlocking triangles) with the trishul,
+  drawn as inline SVG only. It appears at 42 px in the 64 × 64 launcher, 28 px
+  in the header, 20 px beside each Chamundi message, and three times in the
+  typing indicator. The message area uses per-theme 48 × 96 data-URI Shatkona
+  patterns at 6% (light) / 8% (dark), plus a 10% header strip. Launcher rotation,
+  header draw-in and typing fades all stop under `prefers-reduced-motion`.
 - **Colours:** the widget uses `--deep`, `--deep-ink`, `--panel`, `--page-alt`,
   `--accent-soft`, `--ink`, `--button-bg`, `--button-bg-hover`, `--line`,
   `--line-strong`, `--muted`, `--accent-text`, `--accent-ink`, `--focus`,

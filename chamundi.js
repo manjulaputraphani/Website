@@ -147,27 +147,44 @@
     return node;
   }
 
-  function trishulIcon() {
+  function shatkonaIcon(className) {
     var svg = svgEl("svg", {
-      viewBox: "0 0 24 24",
+      viewBox: "0 0 100 100",
       fill: "none",
       stroke: "currentColor",
-      "stroke-width": "1.4",
-      "stroke-linecap": "round",
+      "stroke-width": "2.4",
       "stroke-linejoin": "round",
+      "stroke-linecap": "round",
       "aria-hidden": "true",
       focusable: "false"
     });
+    svg.setAttribute("class", className ? "chamundi-shatkona " + className : "chamundi-shatkona");
+
+    var triangles = svgEl("g", { class: "chamundi-shatkona__triangles" });
     [
-      "M12 3.2v18",
-      "M7.2 6.7V3.6",
-      "M12 6.7V2.8",
-      "M16.8 6.7V3.6",
-      "M4.8 6.7c0 4.2 3.2 6.5 7.2 6.5s7.2-2.3 7.2-6.5",
-      "M8.6 21.2h6.8"
+      "M50 8 L86.4 71 L13.6 71 Z",
+      "M50 92 L86.4 29 L13.6 29 Z"
     ].forEach(function (d) {
-      svg.appendChild(svgEl("path", { d: d }));
+      triangles.appendChild(svgEl("path", { d: d }));
     });
+    svg.appendChild(triangles);
+
+    var trishul = svgEl("g", {
+      class: "chamundi-shatkona__trishul",
+      transform: "translate(31 31) scale(.38)",
+      "stroke-width": "3"
+    });
+    [
+      "M50 14 L50 88",
+      "M50 14 L45 26 M50 14 L55 26",
+      "M28 24 C28 42 37 50 50 50 C63 50 72 42 72 24",
+      "M28 24 L24 32 M28 24 L33 31 M72 24 L76 32 M72 24 L67 31",
+      "M43 58 L57 58 M44 64 L56 64"
+    ].forEach(function (d) {
+      trishul.appendChild(svgEl("path", { d: d }));
+    });
+    svg.appendChild(trishul);
+
     return svg;
   }
 
@@ -182,8 +199,9 @@
 
     var header = el("header", "chamundi-header");
     var brand = el("div", "chamundi-brand");
-    var seal = el("span", "chamundi-brand__seal", "SDH");
-    seal.setAttribute("aria-hidden", "true");
+    var headerMark = el("span", "chamundi-header__mark");
+    headerMark.setAttribute("aria-hidden", "true");
+    headerMark.appendChild(shatkonaIcon("chamundi-header__shatkona"));
     var brandText = el("div", "chamundi-brand__text");
     var title = el("h2", "chamundi-title", "Chamundi");
     title.id = "chamundi-title";
@@ -197,7 +215,7 @@
     status.appendChild(statusText);
     brandText.appendChild(title);
     brandText.appendChild(status);
-    brand.appendChild(seal);
+    brand.appendChild(headerMark);
     brand.appendChild(brandText);
 
     var close = el("button", "chamundi-close", "×");
@@ -208,7 +226,7 @@
     header.appendChild(brand);
     header.appendChild(close);
 
-    var log = el("div", "chamundi-log");
+    var log = el("div", "chamundi-log chamundi-messages");
     log.setAttribute("role", "log");
     log.setAttribute("aria-live", "polite");
     log.setAttribute("aria-relevant", "additions text");
@@ -219,9 +237,10 @@
     typing.hidden = true;
     typing.setAttribute("role", "status");
     for (var i = 0; i < 3; i += 1) {
-      var dot = el("span", "chamundi-typing__dot");
-      dot.setAttribute("aria-hidden", "true");
-      typing.appendChild(dot);
+      var star = el("span", "chamundi-typing__star");
+      star.setAttribute("aria-hidden", "true");
+      star.appendChild(shatkonaIcon("chamundi-typing__star-icon"));
+      typing.appendChild(star);
     }
     var typingSr = el("span", "chamundi-sr-only", "Chamundi is typing.");
     typing.appendChild(typingSr);
@@ -293,14 +312,8 @@
     launcher.setAttribute("aria-label", "Ask Chamundi, the coffee trade desk assistant");
     launcher.setAttribute("aria-expanded", "false");
     launcher.setAttribute("aria-controls", "chamundi-panel");
-    var mark = el("span", "chamundi-launcher__mark", "SDH");
-    mark.setAttribute("aria-hidden", "true");
-    var trishul = trishulIcon();
-    trishul.classList.add("chamundi-launcher__trishul");
-    var label = el("span", "chamundi-launcher__label", "Ask Chamundi");
-    launcher.appendChild(mark);
-    launcher.appendChild(trishul);
-    launcher.appendChild(label);
+    launcher.setAttribute("title", "Ask Chamundi");
+    launcher.appendChild(shatkonaIcon("chamundi-launcher__icon"));
 
     root.appendChild(launcher);
     root.appendChild(panel);
@@ -943,9 +956,17 @@
     var wrap = el("div", "chamundi-msg chamundi-msg--" + (role === "assistant" ? "bot" : "user"));
     wrap.setAttribute("role", "group");
     wrap.setAttribute("aria-label", role === "assistant" ? "Chamundi said" : "You said");
+    var row = el("div", "chamundi-msg__row");
+    if (role === "assistant") {
+      var avatar = el("span", "chamundi-msg__avatar");
+      avatar.setAttribute("aria-hidden", "true");
+      avatar.appendChild(shatkonaIcon("chamundi-msg__avatar-icon"));
+      row.appendChild(avatar);
+    }
     var bubble = el("div", "chamundi-bubble");
     bubble.setAttribute("dir", "auto");
-    wrap.appendChild(bubble);
+    row.appendChild(bubble);
+    wrap.appendChild(row);
     ui.log.insertBefore(wrap, ui.typing);
     return { wrap: wrap, bubble: bubble };
   }

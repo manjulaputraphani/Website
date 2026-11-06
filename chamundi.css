@@ -28,29 +28,37 @@
   position: fixed;
   right: 22px;
   bottom: 22px;
-  width: 76px;
-  height: 76px;
+  width: 64px;
+  height: 64px;
   display: grid;
-  grid-template-rows: 1fr auto;
-  align-items: center;
-  justify-items: center;
-  gap: 2px;
-  padding: 9px 6px 8px;
+  place-items: center;
+  padding: 0;
   border: 1px solid var(--accent, #9a7330);
   border-radius: 0;
   background: var(--deep, #2b1a12);
-  color: var(--deep-ink, #f7efe4);
+  color: var(--accent, #9a7330);
   box-shadow: var(--shadow, 0 18px 46px rgba(43, 26, 18, .22));
   cursor: pointer;
   transition:
-    background-color var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1)),
+    box-shadow var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1)),
     transform var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1)),
     border-color var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1));
 }
 
 .chamundi-launcher:hover {
-  background: var(--deep-2, #1e110a);
   transform: translateY(-2px);
+  box-shadow: 0 0 18px var(--accent, #9a7330), var(--shadow, 0 18px 46px rgba(43, 26, 18, .22));
+  box-shadow:
+    0 0 0 1px var(--accent, #9a7330),
+    0 0 22px color-mix(in srgb, var(--accent, #9a7330) 48%, transparent),
+    var(--shadow, 0 18px 46px rgba(43, 26, 18, .22));
+}
+
+.chamundi-launcher:focus-visible {
+  box-shadow:
+    0 0 0 1px var(--accent, #9a7330),
+    0 0 22px color-mix(in srgb, var(--accent, #9a7330) 48%, transparent),
+    var(--shadow, 0 18px 46px rgba(43, 26, 18, .22));
 }
 
 .chamundi-launcher:active {
@@ -68,33 +76,31 @@
   outline-offset: 3px;
 }
 
-.chamundi-launcher__mark {
-  align-self: end;
-  font-family: var(--font-serif, "Libre Caslon Text", Georgia, serif);
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: .03em;
-  line-height: 1;
+.chamundi-launcher__icon {
+  width: 42px;
+  height: 42px;
+  color: var(--accent, #9a7330);
 }
 
-.chamundi-launcher__label {
-  font-family: var(--font-mono, "IBM Plex Mono", monospace);
-  font-size: 7.5px;
-  font-weight: 500;
-  letter-spacing: .08em;
-  line-height: 1.25;
-  text-align: center;
-  text-transform: uppercase;
-  color: var(--deep-ink, #f7efe4);
+.chamundi-shatkona {
+  display: block;
+  flex: 0 0 auto;
+  overflow: visible;
 }
 
-.chamundi-launcher__trishul {
-  position: absolute;
-  top: 7px;
-  right: 7px;
-  width: 15px;
-  height: 15px;
-  color: var(--accent-dark, #c49a54);
+.chamundi-launcher .chamundi-shatkona__triangles {
+  transform-origin: 50px 50px;
+  transform-box: view-box;
+  animation: chamundi-rotate 24s linear infinite;
+}
+
+.chamundi-launcher:hover .chamundi-shatkona__triangles,
+.chamundi-launcher:focus-visible .chamundi-shatkona__triangles {
+  animation-duration: 6s;
+}
+
+@keyframes chamundi-rotate {
+  to { transform: rotate(360deg); }
 }
 
 .chamundi-root.is-open .chamundi-launcher {
@@ -142,6 +148,7 @@
 
 /* ---------- Header ---------- */
 .chamundi-header {
+  position: relative;
   flex: 0 0 auto;
   display: flex;
   align-items: center;
@@ -149,30 +156,58 @@
   gap: 12px;
   min-height: 66px;
   padding: 11px 12px 11px 16px;
+  overflow: hidden;
   background: var(--deep, #2b1a12);
   color: var(--deep-ink, #f7efe4);
   border-bottom: 1px solid var(--accent, #9a7330);
 }
 
+.chamundi-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  height: 12px;
+  background-repeat: repeat;
+  background-position: 0 -8px;
+  background-size: 48px 96px;
+  pointer-events: none;
+}
+
 .chamundi-brand {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 11px;
   min-width: 0;
 }
 
-.chamundi-brand__seal {
-  flex: 0 0 auto;
+.chamundi-header__mark {
+  flex: 0 0 28px;
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
-  border: 1px solid currentColor;
-  font-family: var(--font-serif, "Libre Caslon Text", Georgia, serif);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: .04em;
-  line-height: 1;
+  width: 28px;
+  height: 28px;
+  color: var(--accent-dark, var(--accent, #9a7330));
+}
+
+.chamundi-header__shatkona {
+  width: 28px;
+  height: 28px;
+  color: inherit;
+}
+
+.chamundi-panel:not([hidden]) .chamundi-header__shatkona .chamundi-shatkona__triangles path {
+  stroke-dasharray: 320;
+  stroke-dashoffset: 320;
+  animation: chamundi-draw 800ms var(--ease, cubic-bezier(.2, .7, .2, 1)) forwards;
+}
+
+@keyframes chamundi-draw {
+  to { stroke-dashoffset: 0; }
 }
 
 .chamundi-brand__text {
@@ -207,6 +242,8 @@
 }
 
 .chamundi-close {
+  position: relative;
+  z-index: 1;
   flex: 0 0 auto;
   display: grid;
   place-items: center;
@@ -244,11 +281,36 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 16px 16px 10px;
-  background: var(--page-alt, #f4efe8);
+  background-color: var(--page-alt, #f4efe8);
   scrollbar-color: var(--line-strong, rgba(43, 26, 18, .34)) transparent;
   scrollbar-width: thin;
   -webkit-overflow-scrolling: touch;
 }
+
+.chamundi-messages {
+  background-repeat: repeat;
+  background-position: 0 0;
+  background-size: 48px 96px;
+}
+
+/* Six theme/mode pattern definitions. The SVG is a 48x96 tile: one full
+   Shatkona on the top row, and the bottom-row star split at both edges so
+   the half-tile brick offset repeats seamlessly. Only the two triangles are
+   drawn in the pattern; the trishul is intentionally omitted. */
+html[data-theme="espresso"][data-mode="light"] .chamundi-messages { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='96' viewBox='0 0 48 96'%3E%3Cg fill='none' stroke='%238f6a28' stroke-opacity='0.06' stroke-width='1' stroke-linejoin='round' stroke-linecap='round'%3E%3Cg transform='translate(8 8) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(-16 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(32 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+html[data-theme="espresso"][data-mode="dark"] .chamundi-messages { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='96' viewBox='0 0 48 96'%3E%3Cg fill='none' stroke='%23cba15a' stroke-opacity='0.08' stroke-width='1' stroke-linejoin='round' stroke-linecap='round'%3E%3Cg transform='translate(8 8) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(-16 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(32 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+html[data-theme="cherry"][data-mode="light"] .chamundi-messages { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='96' viewBox='0 0 48 96'%3E%3Cg fill='none' stroke='%233f7a52' stroke-opacity='0.06' stroke-width='1' stroke-linejoin='round' stroke-linecap='round'%3E%3Cg transform='translate(8 8) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(-16 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(32 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+html[data-theme="cherry"][data-mode="dark"] .chamundi-messages { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='96' viewBox='0 0 48 96'%3E%3Cg fill='none' stroke='%2382b394' stroke-opacity='0.08' stroke-width='1' stroke-linejoin='round' stroke-linecap='round'%3E%3Cg transform='translate(8 8) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(-16 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(32 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+html[data-theme="estate"][data-mode="light"] .chamundi-messages { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='96' viewBox='0 0 48 96'%3E%3Cg fill='none' stroke='%238f6f2e' stroke-opacity='0.06' stroke-width='1' stroke-linejoin='round' stroke-linecap='round'%3E%3Cg transform='translate(8 8) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(-16 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(32 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+html[data-theme="estate"][data-mode="dark"] .chamundi-messages { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='96' viewBox='0 0 48 96'%3E%3Cg fill='none' stroke='%23c3a15b' stroke-opacity='0.08' stroke-width='1' stroke-linejoin='round' stroke-linecap='round'%3E%3Cg transform='translate(8 8) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(-16 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(32 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+
+/* The same tile at 10% opacity for the thin header strip. */
+html[data-theme="espresso"][data-mode="light"] .chamundi-header::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='96' viewBox='0 0 48 96'%3E%3Cg fill='none' stroke='%238f6a28' stroke-opacity='0.1' stroke-width='1' stroke-linejoin='round' stroke-linecap='round'%3E%3Cg transform='translate(8 8) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(-16 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(32 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+html[data-theme="espresso"][data-mode="dark"] .chamundi-header::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='96' viewBox='0 0 48 96'%3E%3Cg fill='none' stroke='%23cba15a' stroke-opacity='0.1' stroke-width='1' stroke-linejoin='round' stroke-linecap='round'%3E%3Cg transform='translate(8 8) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(-16 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(32 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+html[data-theme="cherry"][data-mode="light"] .chamundi-header::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='96' viewBox='0 0 48 96'%3E%3Cg fill='none' stroke='%233f7a52' stroke-opacity='0.1' stroke-width='1' stroke-linejoin='round' stroke-linecap='round'%3E%3Cg transform='translate(8 8) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(-16 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(32 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+html[data-theme="cherry"][data-mode="dark"] .chamundi-header::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='96' viewBox='0 0 48 96'%3E%3Cg fill='none' stroke='%2382b394' stroke-opacity='0.1' stroke-width='1' stroke-linejoin='round' stroke-linecap='round'%3E%3Cg transform='translate(8 8) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(-16 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(32 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+html[data-theme="estate"][data-mode="light"] .chamundi-header::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='96' viewBox='0 0 48 96'%3E%3Cg fill='none' stroke='%238f6f2e' stroke-opacity='0.1' stroke-width='1' stroke-linejoin='round' stroke-linecap='round'%3E%3Cg transform='translate(8 8) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(-16 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(32 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+html[data-theme="estate"][data-mode="dark"] .chamundi-header::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='96' viewBox='0 0 48 96'%3E%3Cg fill='none' stroke='%23c3a15b' stroke-opacity='0.1' stroke-width='1' stroke-linejoin='round' stroke-linecap='round'%3E%3Cg transform='translate(8 8) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(-16 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3Cg transform='translate(32 56) scale(.32)'%3E%3Cpath d='M50 8 L86.4 71 L13.6 71 Z' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 92 L86.4 29 L13.6 29 Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
 
 .chamundi-log:focus-visible {
   outline: 2px solid var(--focus, var(--accent, #9a7330));
@@ -271,7 +333,34 @@
   align-items: flex-end;
 }
 
+.chamundi-msg__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.chamundi-msg--user .chamundi-msg__row {
+  justify-content: flex-end;
+}
+
+.chamundi-msg__avatar {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  margin-top: 3px;
+  color: var(--accent-text, #7c591f);
+}
+
+.chamundi-msg__avatar-icon {
+  width: 20px;
+  height: 20px;
+  color: inherit;
+}
+
 .chamundi-bubble {
+  min-width: 0;
   max-width: 100%;
   padding: 9px 11px;
   border-radius: 0;
@@ -434,7 +523,8 @@
   align-items: center;
   gap: 5px;
   min-height: 36px;
-  padding: 8px 11px;
+  margin-left: 28px;
+  padding: 7px 10px;
   border: 1px solid var(--line, rgba(43, 26, 18, .16));
   border-left: 2px solid var(--accent, #9a7330);
   background: var(--accent-soft, #ede2d0);
@@ -444,19 +534,29 @@
   display: none;
 }
 
-.chamundi-typing__dot {
-  width: 4px;
-  height: 4px;
-  background: var(--accent-text, #7c591f);
-  animation: chamundi-typing 1.15s var(--ease, cubic-bezier(.2, .7, .2, 1)) infinite;
+.chamundi-typing__star {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--accent-text, #7c591f);
+  opacity: .25;
+  animation: chamundi-typing-star 1.15s var(--ease, cubic-bezier(.2, .7, .2, 1)) infinite;
 }
 
-.chamundi-typing__dot:nth-child(2) { animation-delay: .14s; }
-.chamundi-typing__dot:nth-child(3) { animation-delay: .28s; }
+.chamundi-typing__star-icon {
+  width: 16px;
+  height: 16px;
+  color: inherit;
+}
 
-@keyframes chamundi-typing {
-  0%, 60%, 100% { opacity: .28; transform: translateY(0); }
-  30% { opacity: 1; transform: translateY(-2px); }
+.chamundi-typing__star:nth-child(2) { animation-delay: .14s; }
+.chamundi-typing__star:nth-child(3) { animation-delay: .28s; }
+
+@keyframes chamundi-typing-star {
+  0%, 60%, 100% { opacity: .22; }
+  30% { opacity: 1; }
 }
 
 /* ---------- Jump to latest ---------- */
@@ -843,8 +943,8 @@
   .chamundi-launcher {
     right: 16px;
     bottom: max(16px, env(safe-area-inset-bottom));
-    width: 70px;
-    height: 70px;
+    width: 64px;
+    height: 64px;
   }
 
   .chamundi-panel {
@@ -932,9 +1032,19 @@
     transform: none;
   }
 
-  .chamundi-typing__dot {
-    animation: none;
-    opacity: .75;
+  .chamundi-launcher .chamundi-shatkona__triangles {
+    animation: none !important;
+  }
+
+  .chamundi-header__shatkona .chamundi-shatkona__triangles path {
+    stroke-dasharray: none !important;
+    stroke-dashoffset: 0 !important;
+    animation: none !important;
+  }
+
+  .chamundi-typing__star {
+    animation: none !important;
+    opacity: .7;
   }
 
   .chamundi-msg--bot.is-streaming .chamundi-bubble::after {

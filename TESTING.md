@@ -192,8 +192,9 @@ pixels with `data-mode="dark"`, one for each theme:
 - `chamundi-cherry-dark-mobile.png`
 - `chamundi-estate-dark-mobile.png`
 
-They show the greeting, quick replies, header, composer and footer. The panel
-fills the viewport with 16 px content gutters and no horizontal overflow.
+They show the Shatkona launcher/header/avatar, the repeating Shatkona message
+pattern, the 10% header strip, the greeting and quick replies. The panel fills
+the viewport with 16 px content gutters and no horizontal overflow.
 These local captures use the Turnstile site-key placeholder, so the verification
 strip is not shown. In production the Turnstile strip appears above the composer
 until the visitor completes verification.
@@ -220,6 +221,17 @@ Manual checks for each theme:
 7. Confirm focus rings are visible on the close button, input, send button and
    quick replies.
 8. Switch theme while the panel is open; colours must update without a reload.
+9. Confirm the Shatkona appears at 42 px in the 64 × 64 launcher, 28 px in the
+   header, 20 px beside each Chamundi message, and three times in the typing
+   indicator.
+10. Confirm the message area pattern is a 48 × 96 tiled Shatkona with a
+    half-tile brick offset, at 6% (light) or 8% (dark) accent and no trishul.
+    Confirm the header strip uses the same motif at 10%.
+11. Confirm the launcher triangles rotate once every 24 seconds and speed up to
+    6 seconds on hover; the central trishul stays upright. The header Shatkona
+    draws in once over 800 ms when the panel opens.
+12. Enable reduced motion and confirm the launcher, header, typing and cursor
+    animations are off and the header icon remains visible.
 
 ## 9. Accessibility and keyboard checks
 
