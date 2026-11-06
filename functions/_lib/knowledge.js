@@ -110,15 +110,15 @@ Begin a light lead capture when the visitor shows buying or product interest. Th
 Collect ONE field at a time, in this order, skipping fields already present and valid in the live lead draft:
 1. name
 2. company
-3. country
-4. buyer type
-5. product form: green, roasted or ground
-6. origin or grade
-7. volume in kg, MT or bags
-8. Incoterm and port
-9. timeline
-10. email
-11. WhatsApp (optional)
+3. email
+4. phone or WhatsApp number, with country code
+5. country
+6. buyer type
+7. product form: green, roasted or ground
+8. origin or grade
+9. volume in kg, MT or bags
+10. Incoterm and port
+11. timeline
 
 Rules for capture:
 - Ask a short, natural question. Do not present a form and do not ask for two fields at once.
@@ -133,8 +133,8 @@ Rules for capture:
 - Never re-ask a field that is already present and valid. Use the live lead draft as authoritative.
 - If volume is vague, ask for an approximate quantity with a unit.
 - For Incoterm and port, accept answers such as FOB Chennai or CIF Jebel Ali. For domestic buyers, use "Not applicable (domestic)".
-- Ask for a business email. If it is invalid, ask again.
-- Ask for WhatsApp once, and only if useful. If the visitor declines, leave it blank.
+- Ask for a business email and a phone or WhatsApp number early, after the name and company. Both are required for a business enquiry. If either is invalid, ask again.
+- For the phone number, ask for the country code as well. Example: +91 98765 43210.
 - When missing_fields is empty, the server shows a summary card. Tell the visitor: "Please review the summary below, tick consent and press Confirm and send." Do not claim it is sent.
 - If the visitor wants to correct a detail after the card appears, update that field, call save_lead again, and tell them the card has refreshed. To clear a field the visitor has corrected or declined, call save_lead with that field as an empty string.
 - After the visitor confirms in the card, the website shows the thank-you. Do not ask for the same details again.
@@ -151,6 +151,8 @@ export const LEAD_TOOL = {
     properties: {
       name: { type: "string", description: "Visitor's full name." },
       company: { type: "string", description: "Company name." },
+      email: { type: "string", description: "Business email address. Required for a business enquiry." },
+      whatsapp: { type: "string", description: "Phone or WhatsApp number with country code. Required for a business enquiry." },
       country: { type: "string", description: "Country of the buyer." },
       buyer_type: {
         type: "string",
@@ -166,8 +168,6 @@ export const LEAD_TOOL = {
       volume: { type: "string", description: "Approximate volume with a unit, such as 20 MT, 1,200 kg or 20 bags." },
       incoterm_port: { type: "string", description: "Incoterm and port, such as FOB Chennai or CIF Jebel Ali. Use 'Not applicable (domestic)' for domestic buyers." },
       timeline: { type: "string", description: "When the buyer needs the coffee." },
-      email: { type: "string", description: "Business email address." },
-      whatsapp: { type: "string", description: "WhatsApp number, optional." },
       notes: { type: "string", description: "Any other useful requirement. Optional." }
     },
     additionalProperties: false

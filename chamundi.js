@@ -1542,15 +1542,15 @@
     var rows = [
       ["Name", draft.name],
       ["Company", draft.company],
+      ["Email", draft.email],
+      ["Phone / WhatsApp", draft.whatsapp],
       ["Country", draft.country],
       ["Buyer type", BUYER_LABELS[draft.buyer_type] || draft.buyer_type],
       ["Product", FORM_LABELS[draft.product_form] || draft.product_form],
       ["Origin / grade", draft.origin_grade],
       ["Volume", draft.volume],
       ["Incoterm / port", draft.incoterm_port],
-      ["Timeline", draft.timeline],
-      ["Email", draft.email],
-      ["WhatsApp", draft.whatsapp]
+      ["Timeline", draft.timeline]
     ];
 
     if (draft.notes) rows.push(["Notes", draft.notes]);

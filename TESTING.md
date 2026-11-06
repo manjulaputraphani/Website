@@ -207,8 +207,12 @@ Open <http://localhost:8788> and click the **Chamundi launcher**.
 - The bot answers the request and begins lead capture.
 - It asks **one field at a time**, in this order or close to it, skipping fields
   already supplied:
-  name → company → country → buyer type → product form → origin/grade →
-  volume → Incoterm + port → timeline → email → WhatsApp (optional).
+  name → company → email → phone/WhatsApp → country → buyer type → product form →
+  origin/grade → volume → Incoterm + port → timeline.
+- Email and phone/WhatsApp are required and are asked early. The phone answer
+  should include the country code.
+- If either email or phone is missing or invalid, the bot asks for it and does
+  not show the summary card yet.
 - It does not ask for a field twice.
 - It calls `save_lead` silently after each answer. The visible reply is a short
   acknowledgement and the next question.
@@ -219,6 +223,8 @@ Suggested answers:
 | --- | --- |
 | Name | Asha Rao |
 | Company | Beanline Roasters |
+| Email | asha@example.com |
+| Phone / WhatsApp | +91 98765 43210 |
 | Country | India |
 | Buyer type | Roaster |
 | Product form | Green coffee |
@@ -226,8 +232,6 @@ Suggested answers:
 | Volume | 20 MT |
 | Incoterm / port | Not applicable (domestic) |
 | Timeline | January 2027 |
-| Email | asha@example.com |
-| WhatsApp | +91 98765 43210 (or “skip”) |
 
 **Summary card**
 

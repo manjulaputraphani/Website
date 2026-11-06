@@ -8,17 +8,18 @@ export const PRODUCT_FORMS = ["green", "roasted", "ground", "mixed"];
 export const REQUIRED_FIELDS = [
   "name",
   "company",
+  "email",
+  "whatsapp",
   "country",
   "buyer_type",
   "product_form",
   "origin_grade",
   "volume",
   "incoterm_port",
-  "timeline",
-  "email"
+  "timeline"
 ];
 
-export const ALL_FIELDS = [...REQUIRED_FIELDS, "whatsapp", "notes"];
+export const ALL_FIELDS = [...REQUIRED_FIELDS, "notes"];
 
 const LIMITS = {
   name: 120,
@@ -152,7 +153,12 @@ export function validateLead(input) {
 
   REQUIRED_FIELDS.forEach((field) => {
     if (!isFieldComplete(field, lead)) {
-      errors[field] = field === "email" ? "Enter a valid business email address." : "This field is required.";
+      errors[field] =
+        field === "email"
+          ? "Enter a valid business email address."
+          : field === "whatsapp"
+            ? "Enter a phone number with country code."
+            : "This field is required.";
     }
   });
 
@@ -271,6 +277,8 @@ function buildEmail(lead, meta) {
   const rows = [
     ["Name", lead.name],
     ["Company", lead.company],
+    ["Email", lead.email],
+    ["Phone / WhatsApp", lead.whatsapp || "Not provided"],
     ["Country", lead.country],
     ["Buyer type", lead.buyer_type],
     ["Product form", lead.product_form],
@@ -278,8 +286,6 @@ function buildEmail(lead, meta) {
     ["Volume", lead.volume],
     ["Incoterm / port", lead.incoterm_port],
     ["Timeline", lead.timeline],
-    ["Email", lead.email],
-    ["WhatsApp", lead.whatsapp || "Not provided"],
     ["Notes", lead.notes || "None"],
     ["Consent", "Yes, consent recorded"],
     ["Lead ID", meta.id],
