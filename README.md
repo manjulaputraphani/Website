@@ -7,7 +7,7 @@ Bengaluru, Karnataka, India
 > Express · Explore · Taste
 
 - **Live website:** <https://sdhhe.pages.dev/>
-- **GitHub repository:** <https://github.com/manjulaputraphani/SDHHE>
+- **GitHub repository:** <https://github.com/manjulaputraphani/Website>
 - **Cloudflare Pages project:** `sdhhe`
 - **Primary branch:** `main`
 
@@ -133,9 +133,13 @@ in `localStorage` and restored on the next visit.
 - Self-hosted WOFF2 fonts
 - Cloudflare Pages hosting
 - FormSubmit for enquiry delivery
+- Chamundi chat desk: vanilla JavaScript widget, Cloudflare Pages Functions,
+  Anthropic Claude Haiku streaming, Cloudflare D1, Cloudflare Turnstile and
+  Resend email alerts
 
 No package manager, framework or build command is required to run the site.
-`npx wrangler` is only used for deployment.
+`npx wrangler` is used for local chat development, D1 schema setup and
+deployment. The chat and lead APIs live in `functions/api/`.
 
 ---
 
@@ -143,7 +147,9 @@ No package manager, framework or build command is required to run the site.
 
 ```text
 .
-├── index.html                  Page content, SEO tags, JSON-LD
+├── index.html                  Page content, SEO tags, JSON-LD, Chamundi loader
+├── chamundi.js                 Theme-aware chat widget (vanilla JS)
+├── chamundi.css                Chat widget styles, uses existing site tokens
 ├── assets/
 │   ├── css/
 │   │   └── styles.css          Layout, themes, responsive design
@@ -151,12 +157,31 @@ No package manager, framework or build command is required to run the site.
 │   │   ├── site-config.js      Business contact details and form endpoints
 │   │   └── main.js             Themes, navigation, tabs, calculator, form
 │   ├── fonts/                  Self-hosted WOFF2 font files
-│   └── images/                Optimised photography, contours and OG image
+│   └── images/                 Optimised photography, contours and OG image
+├── functions/
+│   ├── api/
+│   │   ├── chat.js             POST /api/chat · Turnstile, rate limit, Claude stream
+│   │   └── lead.js             POST /api/lead · validated D1 lead + Resend alert
+│   └── _lib/
+│       ├── http.js             CORS, JSON and error helpers
+│       ├── knowledge.js        System prompt, coffee knowledge, save_lead tool
+│       ├── leads.js            Lead validation, D1 insert, Resend email
+│       ├── rate-limit.js       D1 session/IP/lead counters
+│       ├── security.js         HMAC passes, Turnstile, IP hashing
+│       └── validate.js         Email and session validators
+├── schema.sql                  D1 tables: leads, chat_sessions, rate limits
+├── wrangler.toml               Local/CLI D1 binding and non-secret variables
+├── .dev.vars.example           Local secrets template (copy to .dev.vars)
+├── tests/
+│   ├── chamundi-screenshots.mjs  Mobile dark-mode capture script
+│   ├── package.json             Playwright dev dependency for screenshots
+│   └── screenshots/             Mobile dark-mode views for all three themes
+├── TESTING.md                  Chamundi test conversations and checks
 ├── favicon.svg                 Browser favicon
-├── apple-touch-icon.png        Mobile home-screen icon
+├── assets/images/apple-touch-icon.png  Mobile home-screen icon
 ├── _headers                    Cloudflare Pages security and cache headers
 ├── scripts/
-│   └── deploy.sh               Deploys only the public website files
+│   └── deploy.sh               Deploys the site, widget and Functions
 ├── robots.txt                  Search-engine instructions
 ├── sitemap.xml                 One-page XML sitemap
 ├── README.md                   This documentation
@@ -164,6 +189,7 @@ No package manager, framework or build command is required to run the site.
 ```
 
 The `.wrangler/` directory is local deployment state and is ignored by Git.
+`.dev.vars` contains local secrets and is also ignored by Git.
 
 ---
 
@@ -179,6 +205,8 @@ Open <http://localhost:8000>.
 
 The site can also be opened by double-clicking `index.html`, but a local server
 is recommended so that fonts, images and form behaviour match production.
+The Chamundi chat needs the Pages Functions runtime; use `npx wrangler pages
+dev .` as described in section 17.9 rather than a plain static server.
 
 ---
 
@@ -430,10 +458,10 @@ The live site is hosted on Cloudflare Pages:
 
 ### Deploying an update
 
-Authenticate once:
+Authenticate once (Node.js 22+ required by current Wrangler):
 
 ```bash
-npx --yes wrangler@4.86.0 login
+npx --yes wrangler@latest login
 ```
 
 Deploy with the included script:
@@ -442,10 +470,14 @@ Deploy with the included script:
 ./scripts/deploy.sh
 ```
 
-The script copies only the public website files into a temporary staging
-directory, so `.git`, `.wrangler`, `README.md` and other working files are never
-uploaded. It then deploys to the Cloudflare Pages project `sdhhe` on the `main`
-branch.
+The script copies the site, the Chamundi widget and the Pages Functions into a
+temporary staging directory, so `.git`, `.wrangler`, `.dev.vars`, `README.md`
+and other working files are never uploaded. It then deploys to the Cloudflare
+Pages project `sdhhe` on the `main` branch.
+
+The chat API also needs the production `DB` D1 binding and the secrets described
+in section 17.7. Configure those in the Pages dashboard before testing the chat
+on the live site.
 
 Wrangler prints a deployment URL. The production alias remains
 <https://sdhhe.pages.dev/> when deploying to the `main` branch.
@@ -454,7 +486,7 @@ Wrangler prints a deployment URL. The production alias remains
 
 The root `_headers` file configures:
 
-- Content Security Policy
+- Content Security Policy, including Cloudflare Turnstile origins
 - `X-Frame-Options: DENY`
 - `X-Content-Type-Options: nosniff`
 - strict referrer policy
@@ -470,24 +502,22 @@ the CSP in `_headers` and redeploy.
 
 ### Automatic deployments with Git
 
-Cloudflare Pages can be connected to the GitHub repository from the Cloudflare
-dashboard:
+The Pages project is connected to the GitHub repository
+`manjulaputraphani/Website`. A push to `main` triggers a production deployment.
 
 1. Pages → project `sdhhe` → Settings → Builds & deployments.
-2. Connect the repository `manjulaputraphani/SDHHE`.
-3. Use branch `main`.
-4. Set framework preset to “None”.
-5. Leave the build command empty and set the output directory to `/` (or the
-   repository root).
+2. Repository: `manjulaputraphani/Website`.
+3. Branch: `main`.
+4. Framework preset: “None”.
+5. Build command: empty. Output directory: `/` (the repository root).
 
-The current deployment is a direct upload. Connecting Git integration is optional
-and would deploy automatically after each push.
+The direct-upload script remains available for a staged deployment when needed.
 
 ---
 
 ## 11. GitHub workflow
 
-Repository: <https://github.com/manjulaputraphani/SDHHE>
+Repository: <https://github.com/manjulaputraphani/Website>
 
 ```bash
 git add .
@@ -630,3 +660,399 @@ The website design and source are maintained for Sri Durga HariHara Enterprises.
 Third-party photography and fonts remain subject to their respective licences.
 
 ---
+
+---
+
+## 17. Chamundi · coffee trade desk chat
+
+Chamundi is the AI trade-desk assistant for Sri Durga HariHara Enterprises. It
+is a theme-aware, accessible chat widget backed by Cloudflare Pages Functions,
+Anthropic Claude Haiku, Cloudflare D1, Cloudflare Turnstile and Resend.
+
+The widget is added with one script tag. It injects its own stylesheet:
+
+```html
+<script
+  src="chamundi.js"
+  data-turnstile-key="YOUR_TURNSTILE_SITE_KEY"
+  data-whatsapp="917569208757"
+  defer></script>
+```
+
+The loader is already at the bottom of `index.html`. Replace
+`REPLACE_WITH_TURNSTILE_SITE_KEY` with the real public site key before
+production. The public site key is safe to expose; the Turnstile secret stays on
+the server.
+
+### 17.1 What is included
+
+| File | Purpose |
+| --- | --- |
+| `chamundi.js` | Self-contained widget: greeting, quick replies, streaming, safe Markdown, session history, Turnstile gate, lead summary card, focus trap, Esc, theme observation |
+| `chamundi.css` | Square, editorial chat UI using the site's existing theme variables and fonts |
+| `functions/api/chat.js` | `POST /api/chat`: origin check, Turnstile or signed session pass, D1 rate limit, last-12-message validation, Claude streaming, `save_lead` tool use |
+| `functions/api/lead.js` | `POST /api/lead`: verifies the signed lead summary, validates every field, writes D1, sends Resend alert |
+| `functions/_lib/*` | Shared HTTP, prompt, validation, rate-limit and signing helpers |
+| `schema.sql` | D1 tables for `leads`, chat drafts and rate-limit counters |
+| `wrangler.toml` | Local/CLI D1 binding and non-secret defaults |
+| `.dev.vars.example` | Template for local secrets |
+| `TESTING.md` | Test conversations, expected answers and mobile dark-mode screenshots |
+| `tests/screenshots/` | Espresso, Cherry and Estate dark-mode mobile views |
+
+The chat is intentionally not a generic assistant. It answers only coffee and
+trade questions for this business. It never quotes prices, confirms stock or
+promises delivery dates. When a visitor asks for a price, it says:
+
+> Availability, grade and price are confirmed in writing before quotation.
+
+### 17.2 Request flow
+
+1. The visitor opens the launcher and completes Cloudflare Turnstile before the
+   first message.
+2. `/api/chat` verifies the Turnstile token, issues a short-lived HMAC-signed
+   session pass, and rate-limits the request.
+3. The API sends the last 12 messages to Claude Haiku with a 400-token output
+   cap. The live lead draft is stored in D1 so early answers survive the
+   12-message window.
+4. Claude calls the `save_lead` tool after each new lead field. The tool merges
+   fields into the draft and returns `missing_fields` and `next_field`.
+5. When every required field is valid, the server emits a signed summary. The
+   widget renders a summary card with a consent checkbox. It does not save the
+   lead yet.
+6. The visitor ticks consent and presses **Confirm and send**. The widget POSTs
+   the signed summary to `/api/lead`.
+7. `/api/lead` re-validates all fields, inserts the row into `leads` and sends a
+   Resend alert. The visitor sees: “Thank you. Our team will reply within one
+   business day.”
+
+The `save_lead` tool creates a draft, not a submitted lead. Consent and final
+submission happen through the summary card and `/api/lead`.
+
+### 17.3 Prerequisites
+
+- Cloudflare account and the existing `sdhhe` Pages project
+- Anthropic API key with access to Claude Haiku
+- Cloudflare Turnstile widget and secret
+- Resend account with a verified sending domain (or the Resend onboarding sender
+  for a private test)
+- Node.js 22+ and Wrangler 4+ for the recommended local workflow
+- `openssl` or another way to generate a random 32-byte secret
+
+### 17.4 Create the D1 database
+
+```bash
+cd /path/to/SDHHE/Website
+npx wrangler d1 create sdhhe-leads
+```
+
+Wrangler prints a `database_id`. Either:
+
+- paste it into `wrangler.toml` for local/CLI work, and
+- add the same database as a D1 binding named `DB` in the Pages dashboard for
+  production; or
+- keep `wrangler.toml` in sync and deploy with Wrangler.
+
+Apply the schema to production and local:
+
+```bash
+npx wrangler d1 execute sdhhe-leads --remote --file=./schema.sql
+npx wrangler d1 execute sdhhe-leads --local  --file=./schema.sql
+```
+
+Check the tables:
+
+```bash
+npx wrangler d1 execute sdhhe-leads --remote \
+  --command "SELECT name FROM sqlite_master WHERE type='table';"
+```
+
+You should see `leads`, `chat_sessions` and `chat_rate_limits`.
+
+### 17.5 Create the Turnstile widget
+
+1. Cloudflare dashboard → Turnstile → **Add widget**.
+2. Name it `Chamundi`.
+3. Add hostname `sdhhe.pages.dev`. Add any preview or custom hostnames you
+   actually use.
+4. Widget mode: **Managed**.
+5. Copy the **site key** into `index.html`:
+
+```html
+data-turnstile-key="0x4AAAAAAA..."
+```
+
+6. Copy the **secret key** into the Pages secret `TURNSTILE_SECRET_KEY`.
+
+The widget renders in `chamundi.js` with action `chamundi`. The API checks the
+action when Turnstile returns one. If you set `TURNSTILE_EXPECTED_HOSTNAME`,
+it must exactly match the hostname in the Turnstile response. Leave it unset if
+you use multiple hostnames.
+
+### 17.6 Create the Resend sender
+
+1. Verify your sending domain in Resend.
+2. Create an API key with permission to send email.
+3. Set `RESEND_API_KEY` as a Pages secret.
+4. Set `LEAD_EMAIL` to the trade-desk inbox. Multiple recipients can be
+   comma-separated.
+5. Set `LEAD_FROM_EMAIL` to a verified sender, for example:
+
+```text
+Chamundi <leads@your-verified-domain.example>
+```
+
+For a private test, Resend's `onboarding@resend.dev` sender only delivers to the
+Resend account owner's address. Use a verified domain for production.
+
+If Resend is temporarily unavailable, the lead is still saved in D1 and the
+visitor still sees the thank-you. Check the Pages logs and resend manually.
+
+### 17.7 Environment variables and secrets
+
+In the Pages dashboard: **Workers & Pages → sdhhe → Settings → Variables and
+Secrets**. Add encrypted values for production and preview as needed.
+
+Required in production:
+
+| Name | Type | Value |
+| --- | --- | --- |
+| `ANTHROPIC_API_KEY` | Secret | Anthropic API key |
+| `TURNSTILE_SECRET_KEY` | Secret | Turnstile secret key |
+| `CHAT_SESSION_SECRET` | Secret | `openssl rand -hex 32` |
+| `RESEND_API_KEY` | Secret | Resend API key |
+| `LEAD_EMAIL` | Variable | Trade-desk inbox |
+| `LEAD_FROM_EMAIL` | Variable | Verified Resend sender |
+
+Recommended or optional:
+
+| Name | Type | Value |
+| --- | --- | --- |
+| `ANTHROPIC_MODEL` | Variable | `claude-haiku-4-5` (default) |
+| `ALLOWED_ORIGINS` | Variable | `https://sdhhe.pages.dev` (default) |
+| `TURNSTILE_EXPECTED_ACTION` | Variable | `chamundi` |
+| `TURNSTILE_EXPECTED_HOSTNAME` | Variable | Optional exact hostname |
+
+Do **not** set `ALLOW_UNVERIFIED_CHAT` in production. It exists only for local
+development and disables the verification requirement when no Turnstile secret
+is present.
+
+`ALLOWED_ORIGINS` is an exact, comma-separated allowlist. Add a custom domain or
+a preview hostname only if you actually use it:
+
+```text
+https://sdhhe.pages.dev,https://www.your-domain.example
+```
+
+The API never returns an `Access-Control-Allow-Origin` header for any other
+origin.
+
+### 17.8 Deploy
+
+#### Git-connected Pages project (recommended)
+
+```bash
+git add chamundi.js chamundi.css functions schema.sql wrangler.toml \
+  .dev.vars.example .gitignore _headers index.html README.md TESTING.md \
+  scripts/deploy.sh tests
+git commit -m "Add Chamundi coffee trade desk chat"
+git push origin main
+```
+
+Cloudflare Pages will deploy the static files, `/functions` and `_headers`.
+Then:
+
+1. Add the production `DB` D1 binding in **Settings → Functions → D1 database
+   bindings**.
+2. Add the environment variables and secrets from section 17.7.
+3. Confirm `index.html` contains the real Turnstile site key.
+4. Redeploy if you changed environment bindings.
+
+#### Wrangler CLI deploy (staged)
+
+The included script stages the site, widget and Functions in a temporary
+directory, so `.dev.vars`, `.wrangler`, `README.md` and other working files are
+never uploaded:
+
+```bash
+./scripts/deploy.sh
+```
+
+The staged deployment uses the `DB` binding and secrets configured in the Pages
+project. If you prefer to deploy a directory manually, deploy a clean staging
+directory rather than the repository root, and never include `.dev.vars`.
+
+Secrets can be set with:
+
+```bash
+npx wrangler pages secret put ANTHROPIC_API_KEY --project-name=sdhhe
+npx wrangler pages secret put TURNSTILE_SECRET_KEY --project-name=sdhhe
+npx wrangler pages secret put CHAT_SESSION_SECRET --project-name=sdhhe
+npx wrangler pages secret put RESEND_API_KEY --project-name=sdhhe
+```
+
+#### Post-deploy checks
+
+```bash
+curl -I https://sdhhe.pages.dev/chamundi.js
+curl -I https://sdhhe.pages.dev/chamundi.css
+curl -i -X OPTIONS https://sdhhe.pages.dev/api/chat \
+  -H "Origin: https://sdhhe.pages.dev" \
+  -H "Access-Control-Request-Method: POST"
+```
+
+Open the site, complete Turnstile, send “Namaskara”, and confirm a streamed
+reply. Then run the lead-capture test in `TESTING.md` and check the `leads` row:
+
+```bash
+npx wrangler d1 execute sdhhe-leads --remote \
+  --command "SELECT id, created_at, name, company, email, status FROM leads ORDER BY created_at DESC LIMIT 5;"
+```
+
+### 17.9 Local development
+
+```bash
+cp .dev.vars.example .dev.vars
+```
+
+Edit `.dev.vars`:
+
+```text
+ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_MODEL=claude-haiku-4-5
+CHAT_SESSION_SECRET=<openssl rand -hex 32>
+ALLOW_UNVERIFIED_CHAT=true
+ALLOWED_ORIGINS=http://localhost:8788
+LEAD_EMAIL=you@example.com
+# RESEND_API_KEY=re_...
+# LEAD_FROM_EMAIL="Chamundi <leads@your-verified-domain.example>"
+```
+
+For local testing without Turnstile, leave the site key placeholder in
+`index.html` and omit `TURNSTILE_SECRET_KEY`. The API allows unverified local
+requests because `ALLOW_UNVERIFIED_CHAT=true`.
+
+To test the real Turnstile gate locally, use Cloudflare's test credentials:
+
+```text
+Site key:   1x00000000000000000000AA
+Secret key: 1x0000000000000000000000000000000AA
+```
+
+Put the test site key in `index.html` temporarily and add the test secret to
+`.dev.vars`. Revert the site key before committing production changes.
+
+Apply the local schema, then run Pages with the D1 binding from `wrangler.toml`:
+
+```bash
+npx wrangler d1 execute sdhhe-leads --local --file=./schema.sql
+npx wrangler pages dev . --port 8788
+```
+
+Open <http://localhost:8788>. Do not pass `--d1 DB=...` if the binding is
+already in `wrangler.toml`; doing so can create a second local database and the
+tables will appear missing.
+
+If you are on Node.js 20, Wrangler 4 will not start. Use Node.js 22 or, for a
+temporary local check, `npx wrangler@3 pages dev . --port 8788`. Upgrade before
+deploying.
+
+### 17.10 Configuration notes
+
+- **Knowledge and rules:** edit `functions/_lib/knowledge.js`. The static system
+  prompt contains the business facts, origin table, tone, language support and
+  non-negotiable rules. The `save_lead` schema is in the same file.
+- **Model:** `ANTHROPIC_MODEL` defaults to `claude-haiku-4-5`. Any Claude model
+  can be used without changing code, but the 400-token cap is intentional.
+- **WhatsApp:** change `data-whatsapp` on the script tag, or set
+  `window.SITE_CONFIG.whatsapp` before the widget loads. Leave it blank to hide
+  the footer link.
+- **Enquiry anchor:** change `data-enquiry` on the script tag if the form anchor
+  changes from `#enquiry`.
+- **Endpoints:** `data-chat-endpoint` and `data-lead-endpoint` exist for testing
+  or a different deployment path.
+- **CSS:** `chamundi.js` injects `chamundi.css` automatically. You can also add
+  a normal stylesheet link and set `data-css` to its URL.
+- **Colours:** the widget uses `--deep`, `--deep-ink`, `--panel`, `--page-alt`,
+  `--accent-soft`, `--ink`, `--button-bg`, `--button-bg-hover`, `--line`,
+  `--line-strong`, `--muted`, `--accent-text`, `--accent-ink`, `--focus`,
+  `--success`, `--error`, `--shadow`, `--ease` and `--speed`. All six
+  theme/mode combinations switch automatically.
+- **User bubble text:** the widget uses `var(--accent-ink)`, which is warm white
+  in the light themes and deep ink in the dark themes. Literal white would fail
+  WCAG AA against the light gold and light green dark-mode button colours. This
+  is the one deliberate deviation from “white text” in the brief, made to keep
+  the interface accessible.
+- **Square corners:** `border-radius: 0` throughout, matching the site buttons.
+- **Motion:** the panel, typing dots and cursor respect
+  `prefers-reduced-motion: reduce`.
+
+### 17.11 Security and cost controls
+
+- The Anthropic key is only read inside the Pages Function. It is never sent to
+  the browser.
+- Turnstile is required before the first message in production. After
+  verification, the API issues an HMAC-signed, 12-hour session pass so the
+  visitor does not have to solve a challenge on every message.
+- Chat limits: 20 messages per chat session and 100 messages per IP per UTC day.
+  Lead submissions are additionally limited to 12 per IP per hour. Counters are
+  stored in D1 and fail closed if D1 is unavailable.
+- Only the last 12 messages are sent to Claude. Each message is capped at 4,000
+  characters and the total request at 24,000 characters.
+- `max_tokens` is 400 on every Claude call.
+- CORS is restricted by `ALLOWED_ORIGINS`, which defaults to
+  `https://sdhhe.pages.dev`.
+- Lead summaries are HMAC-signed and expire after two hours. `/api/lead`
+  re-validates email, enums, required fields, lengths and consent; it uses the
+  signed payload rather than trusting arbitrary client fields.
+- Model output is rendered with DOM text nodes. The Markdown renderer supports
+  paragraphs, bold, italic, inline code, simple lists and safe `http`, `https`
+  and `mailto` links. There is no `innerHTML` from model output.
+- Chat history is kept in `sessionStorage` inside `try/catch`; if storage is
+  blocked, the chat still works for the current page.
+- The `_headers` CSP now allows Cloudflare Turnstile's script, frame, image and
+  connect origins. Do not remove those entries or the verification widget will
+  be blocked.
+
+During lead capture, Claude may make a second Anthropic request in the same
+visitor turn to continue after `save_lead`. The rate limit counts visitor
+messages, not internal model calls. Haiku, the 400-token cap, last-12-message
+window and Turnstile keep normal usage inexpensive.
+
+### 17.12 Data and privacy
+
+- `leads` stores the submitted trade enquiry, consent flag, timestamp, source,
+  hashed IP and user agent. Do not add sensitive personal data to the notes
+  field.
+- `chat_sessions` stores the in-progress lead draft so early answers are not
+  lost when the 12-message context window moves. It is deleted after a
+  successful lead submission. Consider a scheduled cleanup for abandoned
+  drafts:
+  `DELETE FROM chat_sessions WHERE julianday(updated_at) < julianday('now', '-30 days');`
+- `chat_rate_limits` stores counters and expiry timestamps, not raw IP
+  addresses.
+- Resend receives the lead details to send the alert. Use a verified sending
+  domain and restrict API-key permissions.
+- The widget stores conversation history, the session ID and the signed lead
+  summary in `sessionStorage`, which is cleared when the browser tab closes.
+- Update the site's privacy wording if you need to mention AI-assisted chat,
+  D1 storage or Resend processing explicitly.
+
+### 17.13 Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| “Chat verification is not configured yet” | The site key in `index.html` is still the placeholder, or `TURNSTILE_SECRET_KEY` is missing |
+| “Chat signing is not configured” / 503 | `CHAT_SESSION_SECRET` is missing or shorter than 24 characters |
+| Turnstile token rejected | Site key and secret belong to the same widget; hostname matches; `TURNSTILE_EXPECTED_HOSTNAME` is not over-restrictive; CSP includes `challenges.cloudflare.com` |
+| “Chat is temporarily unavailable” | D1 binding `DB` is missing, schema was not applied, or D1 is down |
+| “The assistant is temporarily unavailable” | `ANTHROPIC_API_KEY` invalid, model id unavailable, or Anthropic rate limited |
+| Lead saved but no email | `RESEND_API_KEY`, `LEAD_EMAIL`, `LEAD_FROM_EMAIL`; domain verification; Resend logs |
+| “This summary has expired” | The two-hour lead token expired; ask Chamundi to prepare it again |
+| 429 from `/api/chat` | 20-message session limit or 100-message daily IP limit reached |
+| CORS error in the browser | Add the exact origin to `ALLOWED_ORIGINS` |
+| Local “no such table” | Apply `schema.sql` to the same local database; remove `--d1` override when using `wrangler.toml` |
+| Styles missing | `chamundi.css` must be deployed next to `chamundi.js`; CSP `style-src 'self'` must remain |
+| History disappears | `sessionStorage` is blocked or the tab was closed; this is expected |
+
+For test conversations, expected refusals, lead-capture script and the three
+mobile dark-mode screenshots, see [`TESTING.md`](TESTING.md).

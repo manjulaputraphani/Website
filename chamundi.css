@@ -1,0 +1,950 @@
+/* ============================================================
+   Chamundi · coffee trade desk chat
+   Uses the site's existing theme tokens. Fallbacks below are
+   only for standalone/local use; the live site always supplies
+   --deep, --panel, --accent and friends.
+   ============================================================ */
+
+.chamundi-root {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  pointer-events: none;
+}
+
+.chamundi-root *,
+.chamundi-root *::before,
+.chamundi-root *::after {
+  box-sizing: border-box;
+}
+
+.chamundi-launcher,
+.chamundi-panel {
+  pointer-events: auto;
+}
+
+/* ---------- Launcher ---------- */
+.chamundi-launcher {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  width: 76px;
+  height: 76px;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  align-items: center;
+  justify-items: center;
+  gap: 2px;
+  padding: 9px 6px 8px;
+  border: 1px solid var(--accent, #9a7330);
+  border-radius: 0;
+  background: var(--deep, #2b1a12);
+  color: var(--deep-ink, #f7efe4);
+  box-shadow: var(--shadow, 0 18px 46px rgba(43, 26, 18, .22));
+  cursor: pointer;
+  transition:
+    background-color var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1)),
+    transform var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1)),
+    border-color var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1));
+}
+
+.chamundi-launcher:hover {
+  background: var(--deep-2, #1e110a);
+  transform: translateY(-2px);
+}
+
+.chamundi-launcher:active {
+  transform: translateY(0);
+}
+
+.chamundi-launcher:focus-visible,
+.chamundi-close:focus-visible,
+.chamundi-send:focus-visible,
+.chamundi-chip:focus-visible,
+.chamundi-lead__submit:focus-visible,
+.chamundi-jump:focus-visible,
+.chamundi-footer a:focus-visible {
+  outline: 2px solid var(--focus, var(--accent, #9a7330));
+  outline-offset: 3px;
+}
+
+.chamundi-launcher__mark {
+  align-self: end;
+  font-family: var(--font-serif, "Libre Caslon Text", Georgia, serif);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  line-height: 1;
+}
+
+.chamundi-launcher__label {
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 7.5px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  line-height: 1.25;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--deep-ink, #f7efe4);
+}
+
+.chamundi-launcher__trishul {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 15px;
+  height: 15px;
+  color: var(--accent-dark, #c49a54);
+}
+
+.chamundi-root.is-open .chamundi-launcher {
+  display: none;
+}
+
+/* ---------- Panel ---------- */
+.chamundi-panel {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  display: flex;
+  flex-direction: column;
+  width: 380px;
+  height: 560px;
+  height: min(560px, calc(100dvh - 44px));
+  max-height: calc(100vh - 44px);
+  max-height: calc(100dvh - 44px);
+  overflow: hidden;
+  border: 1px solid var(--line-strong, rgba(43, 26, 18, .34));
+  border-radius: 0;
+  background: var(--panel, #fffdfa);
+  color: var(--ink, #241710);
+  box-shadow: var(--shadow, 0 24px 70px rgba(43, 26, 18, .18));
+  font-family: var(--font-sans, "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif);
+  font-size: 15px;
+  line-height: 1.5;
+  animation: chamundi-in var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1)) both;
+}
+
+.chamundi-panel[hidden] {
+  display: none;
+}
+
+@keyframes chamundi-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Header ---------- */
+.chamundi-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 66px;
+  padding: 11px 12px 11px 16px;
+  background: var(--deep, #2b1a12);
+  color: var(--deep-ink, #f7efe4);
+  border-bottom: 1px solid var(--accent, #9a7330);
+}
+
+.chamundi-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+
+.chamundi-brand__seal {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid currentColor;
+  font-family: var(--font-serif, "Libre Caslon Text", Georgia, serif);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  line-height: 1;
+}
+
+.chamundi-brand__text {
+  min-width: 0;
+}
+
+.chamundi-title {
+  margin: 0;
+  font-family: var(--font-serif, "Libre Caslon Text", Georgia, serif);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: .01em;
+}
+
+.chamundi-status {
+  margin: 4px 0 0;
+  overflow: hidden;
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 8.5px;
+  font-weight: 400;
+  letter-spacing: .12em;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--deep-soft, #cfbca8);
+}
+
+.chamundi-status__dot {
+  color: var(--accent-dark, #c49a54);
+}
+
+.chamundi-close {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--deep-ink, #f7efe4);
+  font-family: var(--font-sans, "IBM Plex Sans", sans-serif);
+  font-size: 26px;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1)),
+    border-color var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1));
+}
+
+.chamundi-close:hover {
+  border-color: var(--line-strong, rgba(43, 26, 18, .34));
+  background: color-mix(in srgb, var(--deep-ink, #f7efe4) 9%, transparent);
+}
+
+/* ---------- Conversation ---------- */
+.chamundi-log {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 16px 10px;
+  background: var(--page-alt, #f4efe8);
+  scrollbar-color: var(--line-strong, rgba(43, 26, 18, .34)) transparent;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chamundi-log:focus-visible {
+  outline: 2px solid var(--focus, var(--accent, #9a7330));
+  outline-offset: -4px;
+}
+
+.chamundi-msg {
+  display: flex;
+  flex-direction: column;
+  max-width: 88%;
+}
+
+.chamundi-msg--bot {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.chamundi-msg--user {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.chamundi-bubble {
+  max-width: 100%;
+  padding: 9px 11px;
+  border-radius: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-family: var(--font-sans, "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif);
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+.chamundi-msg--bot .chamundi-bubble {
+  background: var(--accent-soft, #ede2d0);
+  border: 1px solid var(--line, rgba(43, 26, 18, .16));
+  border-left: 2px solid var(--accent, #9a7330);
+  color: var(--ink, #241710);
+}
+
+.chamundi-msg--user .chamundi-bubble {
+  background: var(--button-bg, #8f6a28);
+  border: 1px solid var(--button-bg, #8f6a28);
+  color: var(--accent-ink, #fffaf3);
+  white-space: pre-wrap;
+}
+
+.chamundi-msg--user .chamundi-bubble a {
+  color: inherit;
+}
+
+.chamundi-msg--bot.is-streaming .chamundi-bubble::after {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 13px;
+  margin-left: 3px;
+  vertical-align: -2px;
+  background: var(--accent-text, #7c591f);
+  animation: chamundi-cursor 1s steps(1) infinite;
+}
+
+@keyframes chamundi-cursor {
+  50% { opacity: 0; }
+}
+
+.chamundi-bubble p {
+  margin: 0 0 8px;
+}
+
+.chamundi-bubble p:last-child {
+  margin-bottom: 0;
+}
+
+.chamundi-bubble strong {
+  font-weight: 600;
+}
+
+.chamundi-bubble em {
+  font-style: italic;
+}
+
+.chamundi-bubble code {
+  padding: 1px 4px;
+  border: 1px solid var(--line, rgba(43, 26, 18, .16));
+  background: var(--page-alt, #f4efe8);
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: .88em;
+}
+
+.chamundi-bubble a {
+  color: var(--accent-text, #7c591f);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.chamundi-bubble ul,
+.chamundi-bubble ol {
+  margin: 2px 0 8px;
+  padding-left: 18px;
+}
+
+.chamundi-bubble li {
+  margin: 2px 0;
+}
+
+.chamundi-bubble ul:last-child,
+.chamundi-bubble ol:last-child {
+  margin-bottom: 0;
+}
+
+.chamundi-md-heading {
+  margin: 0 0 6px !important;
+  font-family: var(--font-mono, "IBM Plex Mono", monospace) !important;
+  font-size: 9.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--accent-text, #7c591f);
+}
+
+.chamundi-notice {
+  align-self: stretch;
+  padding: 9px 11px;
+  border: 1px solid var(--error, #a8382c);
+  border-left: 3px solid var(--error, #a8382c);
+  background: var(--panel, #fffdfa);
+  color: var(--error, #a8382c);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.chamundi-notice a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ---------- Quick replies ---------- */
+.chamundi-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 1px;
+}
+
+.chamundi-chip {
+  min-height: 34px;
+  padding: 7px 9px;
+  border: 1px solid var(--line-strong, rgba(43, 26, 18, .34));
+  border-radius: 0;
+  background: transparent;
+  color: var(--accent-text, #7c591f);
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .055em;
+  line-height: 1.3;
+  text-align: left;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1)),
+    color var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1)),
+    border-color var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1));
+}
+
+.chamundi-chip:hover:not(:disabled) {
+  border-color: var(--accent, #9a7330);
+  background: var(--accent-soft, #ede2d0);
+  color: var(--ink, #241710);
+}
+
+.chamundi-chip:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+/* ---------- Typing ---------- */
+.chamundi-typing {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 36px;
+  padding: 8px 11px;
+  border: 1px solid var(--line, rgba(43, 26, 18, .16));
+  border-left: 2px solid var(--accent, #9a7330);
+  background: var(--accent-soft, #ede2d0);
+}
+
+.chamundi-typing[hidden] {
+  display: none;
+}
+
+.chamundi-typing__dot {
+  width: 4px;
+  height: 4px;
+  background: var(--accent-text, #7c591f);
+  animation: chamundi-typing 1.15s var(--ease, cubic-bezier(.2, .7, .2, 1)) infinite;
+}
+
+.chamundi-typing__dot:nth-child(2) { animation-delay: .14s; }
+.chamundi-typing__dot:nth-child(3) { animation-delay: .28s; }
+
+@keyframes chamundi-typing {
+  0%, 60%, 100% { opacity: .28; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-2px); }
+}
+
+/* ---------- Jump to latest ---------- */
+.chamundi-jump {
+  position: absolute;
+  right: 16px;
+  bottom: 118px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--line-strong, rgba(43, 26, 18, .34));
+  border-radius: 0;
+  background: var(--deep, #2b1a12);
+  color: var(--deep-ink, #f7efe4);
+  font-family: var(--font-sans, "IBM Plex Sans", sans-serif);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow, 0 10px 24px rgba(43, 26, 18, .18));
+}
+
+.chamundi-jump[hidden] {
+  display: none;
+}
+
+/* ---------- Composer ---------- */
+.chamundi-compose {
+  flex: 0 0 auto;
+  padding: 9px 16px 7px;
+  border-top: 1px solid var(--line, rgba(43, 26, 18, .16));
+  background: var(--panel, #fffdfa);
+}
+
+.chamundi-verify {
+  display: grid;
+  gap: 5px;
+  margin: 0 0 8px;
+  padding: 8px 9px;
+  border: 1px solid var(--line, rgba(43, 26, 18, .16));
+  background: var(--accent-soft, #ede2d0);
+}
+
+.chamundi-verify[hidden] {
+  display: none;
+}
+
+.chamundi-verify__label {
+  margin: 0;
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 8.5px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  color: var(--accent-text, #7c591f);
+}
+
+.chamundi-verify__status {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--ink, #241710);
+}
+
+.chamundi-verify__widget {
+  min-height: 65px;
+  overflow: hidden;
+}
+
+.chamundi-verify.is-verified {
+  border-color: var(--success, #2f6544);
+}
+
+.chamundi-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+  min-width: 0;
+}
+
+.chamundi-input {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  min-height: 44px;
+  max-height: 120px;
+  margin: 0;
+  padding: 10px 11px;
+  border: 1px solid var(--field-border, var(--line-strong, rgba(43, 26, 18, .34)));
+  border-radius: 0;
+  background: var(--field-bg, var(--panel, #fffdfa));
+  color: var(--ink, #241710);
+  font-family: var(--font-sans, "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif);
+  font-size: 14.5px;
+  line-height: 1.45;
+  resize: none;
+  overflow-y: auto;
+}
+
+.chamundi-input::placeholder {
+  color: var(--muted, #6e5d50);
+  opacity: 1;
+}
+
+.chamundi-input:focus {
+  outline: 2px solid var(--focus, var(--accent, #9a7330));
+  outline-offset: 1px;
+  border-color: var(--accent, #9a7330);
+}
+
+.chamundi-input:disabled {
+  opacity: .65;
+  cursor: not-allowed;
+}
+
+.chamundi-send {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--button-bg, #8f6a28);
+  border-radius: 0;
+  background: var(--button-bg, #8f6a28);
+  color: var(--accent-ink, #fffaf3);
+  font-family: var(--font-sans, "IBM Plex Sans", sans-serif);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1)),
+    border-color var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1));
+}
+
+.chamundi-send:hover:not(:disabled) {
+  border-color: var(--button-bg-hover, #74511c);
+  background: var(--button-bg-hover, #74511c);
+}
+
+.chamundi-send:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.chamundi-hint {
+  margin: 4px 0 0;
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 8px;
+  letter-spacing: .045em;
+  line-height: 1.35;
+  color: var(--muted, #6e5d50);
+}
+
+/* ---------- Footer ---------- */
+.chamundi-footer {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 11px;
+  padding: 7px 16px max(7px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line, rgba(43, 26, 18, .16));
+  background: var(--panel, #fffdfa);
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 8.5px;
+  letter-spacing: .065em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  color: var(--muted, #6e5d50);
+}
+
+.chamundi-footer a {
+  color: var(--accent-text, #7c591f);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-block: 2px;
+}
+
+.chamundi-footer a:hover {
+  border-bottom-color: currentColor;
+}
+
+.chamundi-footer__ai {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* ---------- Lead summary card ---------- */
+.chamundi-lead {
+  align-self: stretch;
+  max-width: 100%;
+  padding: 11px 12px 12px;
+  border: 1px solid var(--line-strong, rgba(43, 26, 18, .34));
+  border-top: 3px solid var(--accent, #9a7330);
+  background: var(--panel, #fffdfa);
+  color: var(--ink, #241710);
+  font-size: 13px;
+}
+
+.chamundi-lead.is-submitted {
+  border-top-color: var(--success, #2f6544);
+}
+
+.chamundi-lead__eyebrow {
+  margin: 0 0 7px;
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 8.5px;
+  font-weight: 500;
+  letter-spacing: .11em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  color: var(--accent-text, #7c591f);
+}
+
+.chamundi-lead__list {
+  margin: 0 0 9px;
+  padding: 0;
+}
+
+.chamundi-lead__row {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line, rgba(43, 26, 18, .16));
+}
+
+.chamundi-lead__row:last-child {
+  border-bottom: 0;
+}
+
+.chamundi-lead__row dt {
+  margin: 0;
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: .07em;
+  line-height: 1.45;
+  text-transform: uppercase;
+  color: var(--muted, #6e5d50);
+}
+
+.chamundi-lead__row dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ink, #241710);
+}
+
+.chamundi-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 9px 0 9px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink, #241710);
+  cursor: pointer;
+}
+
+.chamundi-consent input {
+  flex: 0 0 auto;
+  display: grid;
+  place-content: center;
+  width: 17px;
+  height: 17px;
+  margin: 1px 0 0;
+  border: 1px solid var(--line-strong, rgba(43, 26, 18, .34));
+  border-radius: 0;
+  background: var(--field-bg, var(--panel, #fffdfa));
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.chamundi-consent input::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: transparent;
+}
+
+.chamundi-consent input:checked::after {
+  background: var(--button-bg, #8f6a28);
+}
+
+.chamundi-consent input:focus-visible {
+  outline: 2px solid var(--focus, var(--accent, #9a7330));
+  outline-offset: 2px;
+}
+
+.chamundi-lead__submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid var(--button-bg, #8f6a28);
+  border-radius: 0;
+  background: var(--button-bg, #8f6a28);
+  color: var(--accent-ink, #fffaf3);
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1)),
+    border-color var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1));
+}
+
+.chamundi-lead__submit:hover:not(:disabled) {
+  border-color: var(--button-bg-hover, #74511c);
+  background: var(--button-bg-hover, #74511c);
+}
+
+.chamundi-lead__submit:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.chamundi-lead__status {
+  min-height: 15px;
+  margin: 7px 0 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--muted, #6e5d50);
+}
+
+.chamundi-lead__status.is-error {
+  color: var(--error, #a8382c);
+}
+
+.chamundi-lead__status.is-success {
+  color: var(--success, #2f6544);
+}
+
+.chamundi-lead.is-submitted .chamundi-consent,
+.chamundi-lead.is-submitted .chamundi-lead__submit {
+  display: none;
+}
+
+.chamundi-lead__refresh {
+  margin-top: 7px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  color: var(--accent-text, #7c591f);
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 8.5px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.chamundi-sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 599px) {
+  html.chamundi-lock,
+  html.chamundi-lock body {
+    overflow: hidden;
+  }
+
+  .chamundi-launcher {
+    right: 16px;
+    bottom: max(16px, env(safe-area-inset-bottom));
+    width: 70px;
+    height: 70px;
+  }
+
+  .chamundi-panel {
+    inset: 0;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    border: 0;
+    animation: chamundi-in-mobile var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1)) both;
+  }
+
+  @keyframes chamundi-in-mobile {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .chamundi-header {
+    padding-top: max(11px, env(safe-area-inset-top));
+  }
+
+  .chamundi-log {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .chamundi-compose {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .chamundi-footer {
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-bottom: max(7px, env(safe-area-inset-bottom));
+  }
+
+  .chamundi-footer__ai {
+    display: none;
+  }
+
+  .chamundi-bubble {
+    max-width: 100%;
+  }
+
+  .chamundi-msg {
+    max-width: 92%;
+  }
+
+  .chamundi-input {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 370px) {
+  .chamundi-lead__row {
+    grid-template-columns: 78px minmax(0, 1fr);
+  }
+
+  .chamundi-status {
+    font-size: 8px;
+    letter-spacing: .09em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chamundi-panel,
+  .chamundi-launcher,
+  .chamundi-close,
+  .chamundi-chip,
+  .chamundi-send,
+  .chamundi-lead__submit {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .chamundi-launcher:hover {
+    transform: none;
+  }
+
+  .chamundi-typing__dot {
+    animation: none;
+    opacity: .75;
+  }
+
+  .chamundi-msg--bot.is-streaming .chamundi-bubble::after {
+    animation: none;
+    opacity: .7;
+  }
+}
+
+@media print {
+  .chamundi-root {
+    display: none !important;
+  }
+}

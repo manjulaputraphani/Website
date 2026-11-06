@@ -1,0 +1,31 @@
+# Local / CLI configuration for Chamundi.
+# The production Cloudflare Pages project also needs the same D1 binding and
+# encrypted secrets configured in the dashboard (see README.md).
+#
+# After `npx wrangler d1 create sdhhe-leads`, replace the placeholder below
+# with the database_id printed by Wrangler.
+
+name = "sdhhe"
+compatibility_date = "2026-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sdhhe-leads"
+database_id = "7d5bc4fc-36b7-4e53-9e8f-a5f1ef88f36b"
+
+[vars]
+ANTHROPIC_MODEL = "claude-haiku-4-5"
+ALLOWED_ORIGINS = "https://sdhhe.pages.dev"
+
+# Do not put secrets in this file. Use `wrangler pages secret put` or the
+# Pages dashboard for:
+#   ANTHROPIC_API_KEY
+#   TURNSTILE_SECRET_KEY
+#   CHAT_SESSION_SECRET
+#   RESEND_API_KEY
+#
+# Non-secret variables to set in the dashboard:
+#   LEAD_EMAIL=sridurgahariharaenterprises@gmail.com
+#   LEAD_FROM_EMAIL=Chamundi <leads@your-verified-domain.example>
+#   TURNSTILE_EXPECTED_ACTION=chamundi
+#   TURNSTILE_EXPECTED_HOSTNAME=sdhhe.pages.dev

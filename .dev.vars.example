@@ -1,0 +1,25 @@
+# Copy this file to .dev.vars for local development.
+# .dev.vars is ignored by Git. Never commit real keys.
+
+ANTHROPIC_API_KEY=sk-ant-replace-me
+ANTHROPIC_MODEL=claude-haiku-4-5
+
+# Generate with: openssl rand -hex 32
+CHAT_SESSION_SECRET=replace-with-a-random-32-byte-hex-secret
+
+# Local-only convenience. Remove this line for production.
+ALLOW_UNVERIFIED_CHAT=true
+ALLOWED_ORIGINS=http://localhost:8788
+
+LEAD_EMAIL=trade-desk@example.com
+LEAD_FROM_EMAIL="Chamundi <leads@your-verified-domain.example>"
+
+# Optional: set these to test the real Turnstile gate locally.
+# Use Cloudflare's test credentials:
+#   site key 1x00000000000000000000AA
+#   secret   1x0000000000000000000000000000000AA
+# TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+# TURNSTILE_EXPECTED_ACTION=chamundi
+
+# Optional: Resend is skipped when this is absent; the lead still saves to D1.
+# RESEND_API_KEY=re_replace-me
