@@ -134,8 +134,8 @@ in `localStorage` and restored on the next visit.
 - Cloudflare Pages hosting
 - FormSubmit for enquiry delivery
 - Chamundi chat desk: vanilla JavaScript widget, Cloudflare Pages Functions,
-  Anthropic Claude Haiku streaming, Cloudflare D1, Cloudflare Turnstile and
-  Resend email alerts
+  Anthropic Claude Haiku or Ollama cloud streaming, Cloudflare D1, Cloudflare
+  Turnstile and Resend email alerts
 
 No package manager, framework or build command is required to run the site.
 `npx wrangler` is used for local chat development, D1 schema setup and
@@ -665,16 +665,17 @@ Third-party photography and fonts remain subject to their respective licences.
 
 ## 17. Chamundi · coffee trade desk chat
 
-> **Current deployment status:** the site, Chamundi widget, Pages Functions and
-> the `sdhhe-leads` D1 database are deployed. `CHAT_SESSION_SECRET` and
-> `LEAD_EMAIL` are configured. Turnstile site/secret keys, `ANTHROPIC_API_KEY`
-> and `RESEND_API_KEY` still need to be added before the bot can reply or send
-> email alerts. Until then the widget shows a clear setup notice and links to
-> the enquiry form.
+> **Current deployment status:** the site, Chamundi widget, Pages Functions,
+> `sdhhe-leads` D1 database and Ollama free-model path are deployed.
+> `CHAT_SESSION_SECRET`, `LEAD_EMAIL` and `OLLAMA_API_KEY` are configured.
+> Turnstile site/secret keys and `RESEND_API_KEY` still need to be added before
+> public chat and email alerts are fully enabled. Until Turnstile is configured,
+> the widget shows a clear setup notice and links to the enquiry form.
 
 Chamundi is the AI trade-desk assistant for Sri Durga HariHara Enterprises. It
 is a theme-aware, accessible chat widget backed by Cloudflare Pages Functions,
-Anthropic Claude Haiku, Cloudflare D1, Cloudflare Turnstile and Resend.
+Anthropic Claude Haiku or Ollama cloud, Cloudflare D1, Cloudflare Turnstile and
+Resend.
 
 The widget is added with one script tag. It injects its own stylesheet:
 
@@ -718,9 +719,10 @@ promises delivery dates. When a visitor asks for a price, it says:
    first message.
 2. `/api/chat` verifies the Turnstile token, issues a short-lived HMAC-signed
    session pass, and rate-limits the request.
-3. The API sends the last 12 messages to Claude Haiku with a 400-token output
-   cap. The live lead draft is stored in D1 so early answers survive the
-   12-message window.
+3. The API sends the last 12 messages to the configured model provider. Anthropic
+   is capped at 400 output tokens; Ollama Beam is capped at 1200 because its
+   internal thinking tokens count toward the output budget. The live lead draft
+   is stored in D1 so early answers survive the 12-message window.
 4. Claude calls the `save_lead` tool after each new lead field. The tool merges
    fields into the draft and returns `missing_fields` and `next_field`.
 5. When every required field is valid, the server emits a signed summary. The
@@ -738,7 +740,8 @@ submission happen through the summary card and `/api/lead`.
 ### 17.3 Prerequisites
 
 - Cloudflare account and the existing `sdhhe` Pages project
-- Anthropic API key with access to Claude Haiku
+- Anthropic API key with access to Claude Haiku, or an Ollama API key with
+  access to a cloud model (the free `beam` model is currently configured)
 - Cloudflare Turnstile widget and secret
 - Resend account with a verified sending domain (or the Resend onboarding sender
   for a private test)
@@ -823,18 +826,22 @@ Required in production:
 
 | Name | Type | Value |
 | --- | --- | --- |
-| `ANTHROPIC_API_KEY` | Secret | Anthropic API key |
 | `TURNSTILE_SECRET_KEY` | Secret | Turnstile secret key |
 | `CHAT_SESSION_SECRET` | Secret | `openssl rand -hex 32` |
 | `RESEND_API_KEY` | Secret | Resend API key |
 | `LEAD_EMAIL` | Variable | Trade-desk inbox |
 | `LEAD_FROM_EMAIL` | Variable | Verified Resend sender |
+| One AI provider | Secret | `ANTHROPIC_API_KEY` **or** `OLLAMA_API_KEY` |
 
 Recommended or optional:
 
 | Name | Type | Value |
 | --- | --- | --- |
-| `ANTHROPIC_MODEL` | Variable | `claude-haiku-4-5` (default) |
+| `CHAT_PROVIDER` | Variable | `anthropic` or `ollama`; auto-detects when omitted |
+| `ANTHROPIC_MODEL` | Variable | `claude-haiku-4-5` (default for Anthropic) |
+| `OLLAMA_MODEL` | Variable | `beam` (free promo) or `deepseek-v4.1-flash` with credits |
+| `OLLAMA_MAX_TOKENS` | Variable | `1200` (default for Ollama thinking models; Anthropic stays at 400) |
+| `OLLAMA_BASE_URL` | Variable | `https://ollama.com` (or a local Ollama URL) |
 | `ALLOWED_ORIGINS` | Variable | `https://sdhhe.pages.dev` (default) |
 | `TURNSTILE_EXPECTED_ACTION` | Variable | `chamundi` |
 | `TURNSTILE_EXPECTED_HOSTNAME` | Variable | Optional exact hostname |
@@ -892,6 +899,7 @@ Secrets can be set with:
 
 ```bash
 npx wrangler pages secret put ANTHROPIC_API_KEY --project-name=sdhhe
+npx wrangler pages secret put OLLAMA_API_KEY --project-name=sdhhe
 npx wrangler pages secret put TURNSTILE_SECRET_KEY --project-name=sdhhe
 npx wrangler pages secret put CHAT_SESSION_SECRET --project-name=sdhhe
 npx wrangler pages secret put RESEND_API_KEY --project-name=sdhhe
@@ -926,6 +934,11 @@ Edit `.dev.vars`:
 ```text
 ANTHROPIC_API_KEY=sk-ant-...
 ANTHROPIC_MODEL=claude-haiku-4-5
+# Or use Ollama instead of Anthropic:
+# OLLAMA_API_KEY=...
+# OLLAMA_MODEL=beam
+# OLLAMA_MAX_TOKENS=1200
+# CHAT_PROVIDER=ollama
 CHAT_SESSION_SECRET=<openssl rand -hex 32>
 ALLOW_UNVERIFIED_CHAT=true
 ALLOWED_ORIGINS=http://localhost:8788
@@ -974,7 +987,11 @@ deploying.
   answer. Medical/health advice, prices, stock claims and delivery-date promises
   are explicitly blocked.
 - **Model:** `ANTHROPIC_MODEL` defaults to `claude-haiku-4-5`. Any Claude model
-  can be used without changing code, but the 400-token cap is intentional.
+  can be used without changing code. The production Ollama option defaults to
+  `beam`, which is free until 9 November 2026; DeepSeek cloud models require
+  usage credits on the Ollama account. The Ollama cap is 1200 tokens because
+  Beam spends part of the output budget on internal thinking. Anthropic stays
+  at 400.
 - **WhatsApp:** change `data-whatsapp` on the script tag, or set
   `window.SITE_CONFIG.whatsapp` before the widget loads. Leave it blank to hide
   the footer link.
@@ -1006,17 +1023,19 @@ deploying.
 
 ### 17.11 Security and cost controls
 
-- The Anthropic key is only read inside the Pages Function. It is never sent to
-  the browser.
+- The provider key (`ANTHROPIC_API_KEY` or `OLLAMA_API_KEY`) is only read
+  inside the Pages Function. It is never sent to the browser.
 - Turnstile is required before the first message in production. After
   verification, the API issues an HMAC-signed, 12-hour session pass so the
   visitor does not have to solve a challenge on every message.
 - Chat limits: 20 messages per chat session and 100 messages per IP per UTC day.
   Lead submissions are additionally limited to 12 per IP per hour. Counters are
   stored in D1 and fail closed if D1 is unavailable.
-- Only the last 12 messages are sent to Claude. Each message is capped at 4,000
-  characters and the total request at 24,000 characters.
-- `max_tokens` is 400 on every Claude call.
+- Only the last 12 messages are sent to the model. Each message is capped at
+  4,000 characters and the total request at 24,000 characters.
+- `max_tokens` is 400 for Anthropic. Ollama defaults to 1200 because Beam's
+  internal thinking tokens count against the output budget; `OLLAMA_MAX_TOKENS`
+  can lower or raise it between 200 and 2000.
 - CORS is restricted by `ALLOWED_ORIGINS`, which defaults to
   `https://sdhhe.pages.dev`.
 - Lead summaries are HMAC-signed and expire after two hours. `/api/lead`
@@ -1031,10 +1050,10 @@ deploying.
   connect origins. Do not remove those entries or the verification widget will
   be blocked.
 
-During lead capture, Claude may make a second Anthropic request in the same
+During lead capture, the model may make a second provider request in the same
 visitor turn to continue after `save_lead`. The rate limit counts visitor
-messages, not internal model calls. Haiku, the 400-token cap, last-12-message
-window and Turnstile keep normal usage inexpensive.
+messages, not internal model calls. The model cap and turn limits keep normal
+usage inexpensive.
 
 ### 17.12 Data and privacy
 
@@ -1063,7 +1082,7 @@ window and Turnstile keep normal usage inexpensive.
 | “Chat signing is not configured” / 503 | `CHAT_SESSION_SECRET` is missing or shorter than 24 characters |
 | Turnstile token rejected | Site key and secret belong to the same widget; hostname matches; `TURNSTILE_EXPECTED_HOSTNAME` is not over-restrictive; CSP includes `challenges.cloudflare.com` |
 | “Chat is temporarily unavailable” | D1 binding `DB` is missing, schema was not applied, or D1 is down |
-| “The assistant is temporarily unavailable” | `ANTHROPIC_API_KEY` invalid, model id unavailable, or Anthropic rate limited |
+| “The assistant is temporarily unavailable” | Provider key invalid, model id unavailable, Ollama account out of credits, or provider rate limited |
 | Lead saved but no email | `RESEND_API_KEY`, `LEAD_EMAIL`, `LEAD_FROM_EMAIL`; domain verification; Resend logs |
 | “This summary has expired” | The two-hour lead token expired; ask Chamundi to prepare it again |
 | 429 from `/api/chat` | 20-message session limit or 100-message daily IP limit reached |

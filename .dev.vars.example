@@ -23,3 +23,10 @@ LEAD_FROM_EMAIL="Chamundi <leads@your-verified-domain.example>"
 
 # Optional: Resend is skipped when this is absent; the lead still saves to D1.
 # RESEND_API_KEY=re_replace-me
+
+# Optional: use Ollama cloud or a local Ollama server instead of Anthropic.
+# OLLAMA_API_KEY=replace-me
+# OLLAMA_MODEL=beam
+# OLLAMA_MAX_TOKENS=1200
+# CHAT_PROVIDER=ollama
+# OLLAMA_BASE_URL=https://ollama.com

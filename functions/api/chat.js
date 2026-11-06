@@ -341,6 +341,46 @@ async function runChatStream({ env, sse, sessionId, messages, draft, sessionPass
   }
 }
 
+function resolveProvider(env) {
+  const requested = String(env.CHAT_PROVIDER || "").toLowerCase();
+  const ollamaKey = env.OLLAMA_API_KEY || "";
+  const anthropicKey = env.ANTHROPIC_API_KEY || "";
+  const wantsOllama = requested === "ollama" || (!requested && Boolean(ollamaKey));
+
+  if (wantsOllama) {
+    if (!ollamaKey && !env.OLLAMA_BASE_URL) {
+      throw new ClaudeServiceError("ai_not_configured", "OLLAMA_API_KEY is not configured.");
+    }
+    const base = String(env.OLLAMA_BASE_URL || "https://ollama.com").replace(/\/+$/, "");
+    const url = base.endsWith("/v1") ? `${base}/messages` : `${base}/v1/messages`;
+    const headers = {
+      "Content-Type": "application/json",
+      "anthropic-version": "2023-06-01"
+    };
+    if (ollamaKey) headers.Authorization = `Bearer ${ollamaKey}`;
+    return {
+      name: "ollama",
+      url,
+      model: env.OLLAMA_MODEL || "beam",
+      headers
+    };
+  }
+
+  if (!anthropicKey) {
+    throw new ClaudeServiceError("ai_not_configured", "No AI provider is configured.");
+  }
+  return {
+    name: "anthropic",
+    url: "https://api.anthropic.com/v1/messages",
+    model: env.ANTHROPIC_MODEL || "claude-haiku-4-5",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": anthropicKey,
+      "anthropic-version": "2023-06-01"
+    }
+  };
+}
+
 async function callClaude({
   env,
   messages,
@@ -350,29 +390,25 @@ async function callClaude({
   onDraftChange,
   onSummary
 }) {
-  if (!env.ANTHROPIC_API_KEY) {
-    throw new ClaudeServiceError("ai_not_configured", "ANTHROPIC_API_KEY is not configured.");
-  }
-
-  const model = env.ANTHROPIC_MODEL || "claude-haiku-4-5";
+  const provider = resolveProvider(env);
   let currentDraft = draft;
   let claudeMessages = messages;
   let system = buildSystemPrompt(currentDraft, missingFields(currentDraft));
   let anyText = false;
   let lastRoundHadText = false;
+  const maxTokens =
+    provider.name === "ollama"
+      ? Math.min(Math.max(Number(env.OLLAMA_MAX_TOKENS || 1200), 200), 2000)
+      : 400;
 
   for (let round = 0; round < 2; round += 1) {
     let roundHadText = false;
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const response = await fetch(provider.url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01"
-      },
+      headers: provider.headers,
       body: JSON.stringify({
-        model,
-        max_tokens: 400,
+        model: provider.model,
+        max_tokens: maxTokens,
         temperature: 0.3,
         system,
         messages: claudeMessages,
@@ -383,12 +419,12 @@ async function callClaude({
 
     if (!response.ok) {
       const detail = await response.text();
-      console.error("Anthropic API error", response.status, detail.slice(0, 700));
+      console.error(`${provider.name} API error`, response.status, detail.slice(0, 700));
       if (response.status === 401 || response.status === 403) {
         throw new ClaudeServiceError("ai_auth_error", "The assistant credentials were rejected.", 502);
       }
-      if (response.status === 429) {
-        throw new ClaudeServiceError("ai_rate_limited", "The assistant is busy.", 503);
+      if (response.status === 402 || response.status === 429) {
+        throw new ClaudeServiceError("ai_rate_limited", "The assistant is busy or out of credits.", 503);
       }
       throw new ClaudeServiceError("ai_unavailable", "The assistant is unavailable.", 503);
     }
@@ -531,6 +567,12 @@ async function parseClaudeStream(response, onText) {
       if (block.type === "text") {
         blocks[event.index] = { type: "text", text: block.text || "" };
         if (block.text) await onText(block.text);
+      } else if (block.type === "thinking") {
+        blocks[event.index] = {
+          type: "thinking",
+          thinking: block.thinking || "",
+          signature: block.signature || ""
+        };
       } else if (block.type === "tool_use") {
         blocks[event.index] = {
           type: "tool_use",
@@ -549,6 +591,10 @@ async function parseClaudeStream(response, onText) {
       if (event.delta.type === "text_delta") {
         block.text = (block.text || "") + (event.delta.text || "");
         if (event.delta.text) await onText(event.delta.text);
+      } else if (event.delta.type === "thinking_delta") {
+        block.thinking = (block.thinking || "") + (event.delta.thinking || "");
+      } else if (event.delta.type === "signature_delta") {
+        block.signature = (block.signature || "") + (event.delta.signature || "");
       } else if (event.delta.type === "input_json_delta") {
         block.inputJson = (block.inputJson || "") + (event.delta.partial_json || "");
       }
@@ -605,7 +651,13 @@ async function parseClaudeStream(response, onText) {
   const toolUses = [];
 
   ordered.forEach((block) => {
-    if (block.type === "text") {
+    if (block.type === "thinking") {
+      if (block.thinking || block.signature) {
+        const thinkingBlock = { type: "thinking", thinking: block.thinking || "" };
+        if (block.signature) thinkingBlock.signature = block.signature;
+        assistantContent.push(thinkingBlock);
+      }
+    } else if (block.type === "text") {
       if (block.text) assistantContent.push({ type: "text", text: block.text });
     } else if (block.type === "tool_use") {
       let input = {};
