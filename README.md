@@ -968,6 +968,11 @@ deploying.
 - **Knowledge and rules:** edit `functions/_lib/knowledge.js`. The static system
   prompt contains the business facts, origin table, tone, language support and
   non-negotiable rules. The `save_lead` schema is in the same file.
+- **Scope:** the prompt is coffee-only. It allows general coffee knowledge
+  (seeds and beans, origins, processing, roasting, brewing, storage) and the
+  business's own services. Off-topic questions get one fixed refusal line and no
+  answer. Medical/health advice, prices, stock claims and delivery-date promises
+  are explicitly blocked.
 - **Model:** `ANTHROPIC_MODEL` defaults to `claude-haiku-4-5`. Any Claude model
   can be used without changing code, but the 400-token cap is intentional.
 - **WhatsApp:** change `data-whatsapp` on the script tag, or set

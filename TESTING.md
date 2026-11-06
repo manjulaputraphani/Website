@@ -27,6 +27,53 @@ Open <http://localhost:8788> and click **Ask Chamundi**.
 - Two to four sentences, or a short compact list. No prices, stock claims or
   invented farms.
 
+## 1A. Coffee seed and bean questions
+
+**Visitor**
+
+> What is a coffee bean, and is it a seed?
+
+**Expected**
+
+- A coffee bean is the seed of the coffee cherry.
+- Most cherries contain two flat seeds; a peaberry is one round seed.
+- Green coffee is the raw seed; roasting develops aroma, acidity, body and
+  sweetness.
+- Two to four sentences. No company-specific claims, prices or health advice.
+
+**Visitor**
+
+> Which coffee seeds and beans do you supply?
+
+**Expected**
+
+- Arabica and Robusta, as green beans, roasted beans or ground coffee.
+- Indian origins such as Chikmagalur, Coorg, Araku, Monsooned Malabar and
+  Wayanad, plus international origins such as Ethiopia, Kenya, Colombia, Brazil
+  and Vietnam.
+- Samples and cup reports on request. No stock or price confirmation.
+
+**Visitor**
+
+> How should I store roasted coffee beans?
+
+**Expected**
+
+- Airtight, cool, dry, away from light and strong odours.
+- Whole bean keeps better than ground; grind just before brewing.
+- General storage guidance only; no invented shelf-life claim for a specific
+  lot.
+
+**Visitor**
+
+> Is coffee good for my health?
+
+**Expected**
+
+- The bot says it cannot give medical or health advice.
+- It offers help with coffee types, processing or trade terms instead.
+- It does not make health claims or recommend coffee as a treatment.
+
 ## 2. Flavour recommendation
 
 **Visitor**
@@ -151,12 +198,13 @@ quotation rule and offer to connect the visitor with the trade desk.
 
 **Expected**
 
-A polite one-sentence decline, then a steer back to coffee. Example shape:
+The exact scope refusal:
 
-> I’m here for coffee trade questions only. I’d be glad to help with origins,
-> grades, samples or export terms.
+> I'm here for coffee questions only. I can help with coffee seeds, beans,
+> origins, grades, roasting or trade terms.
 
 No answer about the match, politics, health, finance or other unrelated topics.
+The bot must not continue the off-topic discussion after the refusal.
 
 ## 7. Kannada greeting
 
