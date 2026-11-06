@@ -665,6 +665,13 @@ Third-party photography and fonts remain subject to their respective licences.
 
 ## 17. Chamundi · coffee trade desk chat
 
+> **Current deployment status:** the site, Chamundi widget, Pages Functions and
+> the `sdhhe-leads` D1 database are deployed. `CHAT_SESSION_SECRET` and
+> `LEAD_EMAIL` are configured. Turnstile site/secret keys, `ANTHROPIC_API_KEY`
+> and `RESEND_API_KEY` still need to be added before the bot can reply or send
+> email alerts. Until then the widget shows a clear setup notice and links to
+> the enquiry form.
+
 Chamundi is the AI trade-desk assistant for Sri Durga HariHara Enterprises. It
 is a theme-aware, accessible chat widget backed by Cloudflare Pages Functions,
 Anthropic Claude Haiku, Cloudflare D1, Cloudflare Turnstile and Resend.

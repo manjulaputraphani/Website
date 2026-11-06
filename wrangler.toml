@@ -2,8 +2,8 @@
 # The production Cloudflare Pages project also needs the same D1 binding and
 # encrypted secrets configured in the dashboard (see README.md).
 #
-# After `npx wrangler d1 create sdhhe-leads`, replace the placeholder below
-# with the database_id printed by Wrangler.
+# Live D1 database for the sdhhe Pages project.
+# If you recreate the database, replace the database_id below.
 
 name = "sdhhe"
 compatibility_date = "2026-01-01"
