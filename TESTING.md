@@ -154,6 +154,18 @@ Open <http://localhost:8788> and click the **Chamundi launcher**.
 - If the visitor says home use, it keeps helping without collecting business
   contact details.
 
+**Visitor**
+
+> How do I make filter coffee?
+
+*(without giving a name first)*
+
+**Expected**
+
+- A short, practical answer.
+- Then a polite request for the visitor's name before going deeper.
+- It does not ask for several details at once.
+
 ## 2. Flavour recommendation
 
 **Visitor**

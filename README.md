@@ -985,9 +985,11 @@ deploying.
   than a formal call-centre script. The first reply welcomes the visitor and asks
   for their name, politely and formally. Once the name is known, it asks what
   brings them to coffee — brewing, beans, an origin or a business requirement —
-  without selling first. Replies offer two or three practical options and one
-  short follow-up question, and the bot stops adding information after two or
-  three helpful exchanges so it can ask about the visitor and their requirement.
+  without selling first. If the visitor skips the name and asks a coffee
+  question, Chamundi answers briefly and then asks for the name before going
+  deeper. Replies offer two or three practical options and one short follow-up
+  question, and the bot stops adding information after two or three helpful
+  exchanges so it can ask about the visitor and their requirement.
 - **Brewing help:** answers give a ratio, grind, water temperature and time for
   filter/pour-over, French press, espresso, moka pot, South Indian filter or cold
   brew, plus one-variable taste fixes.
