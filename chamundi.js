@@ -10,7 +10,7 @@
   if (window.__chamundiLoaded) return;
   window.__chamundiLoaded = true;
 
-  var GREETING = "Namaskara. I'm Chamundi from Sri Durga HariHara Enterprises. Looking for green or roasted coffee?";
+  var GREETING = "Namaskara. I'm Chamundi from Sri Durga HariHara Enterprises. Shall we talk coffee — brewing, beans, or finding the right cup for you?";
   var THANK_YOU = "Thank you. Our team will reply within one business day.";
   var MAX_INPUT = 2000;
   var MAX_HISTORY = 40;
@@ -1333,7 +1333,7 @@
 
   function addChips() {
     if (ui.chips || state.messages.length || state.leadCard) return;
-    var prompts = ["Request samples", "Compare origins", "Export terms", "Get a quote"];
+    var prompts = ["Brewing guide", "Find my coffee", "Request samples", "Compare origins", "Export terms", "Get a quote"];
     var wrap = el("div", "chamundi-chips");
     prompts.forEach(function (prompt) {
       var button = el("button", "chamundi-chip", prompt + " →");

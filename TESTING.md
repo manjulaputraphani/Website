@@ -74,6 +74,53 @@ Open <http://localhost:8788> and click the **Chamundi launcher**.
 - It offers help with coffee types, processing or trade terms instead.
 - It does not make health claims or recommend coffee as a treatment.
 
+## 1B. Friendly brewing conversation and customisation bridge
+
+**Visitor**
+
+> Hi
+
+**Expected**
+
+- A warm, natural welcome — not “How may I assist you today?”
+- One easy question about what they brew with, what they enjoy, or what they
+  would like to explore.
+- No sales push in the first reply.
+
+**Visitor**
+
+> How do I make filter coffee?
+
+**Expected**
+
+- Two or three practical brewing options or steps.
+- Ratio, grind, water temperature and time, in plain language.
+- One short follow-up question about their setup or taste.
+- No price, stock or delivery claims.
+
+**Visitor**
+
+> I tried it and it was good.
+
+**Expected**
+
+- A warm acknowledgement.
+- One or two refinements to make it excellent — grind, ratio, water, freshness,
+  roast or milk balance.
+- One light bridge: we supply green or roasted coffee and can customise roast,
+  grind, packing, HoReCa and private-label formats.
+- Offers samples or a formal quotation. Does not become pushy or repeat the
+  bridge.
+
+**Visitor**
+
+> Yes, I would like samples.
+
+**Expected**
+
+- The bot starts the existing lead capture flow, one question at a time.
+- It does not quote a price or promise a delivery date.
+
 ## 2. Flavour recommendation
 
 **Visitor**

@@ -981,6 +981,20 @@ deploying.
 - **Knowledge and rules:** edit `functions/_lib/knowledge.js`. The static system
   prompt contains the business facts, origin table, tone, language support and
   non-negotiable rules. The `save_lead` schema is in the same file.
+- **Conversation style:** Chamundi is warm, friendly and conversational rather
+  than a formal call-centre script. The first reply welcomes the visitor and asks
+  one easy question without selling. Replies offer two or three practical options
+  and one short follow-up question. A brewing answer gives a ratio, grind, water
+  temperature and time for filter/pour-over, French press, espresso, moka pot,
+  South Indian filter or cold brew, plus one-variable taste fixes. The greeting
+  is paired with six starter chips: Brewing guide, Find my coffee, Request
+  samples, Compare origins, Export terms and Get a quote.
+- **Positive feedback and the soft bridge:** when a visitor says the cup was good,
+  Chamundi suggests one or two refinements (grind, ratio, water, freshness, roast
+  or milk balance). It then makes one light bridge: SDHHE supplies green or
+  roasted coffee and can customise roast, grind, blend, packing, HoReCa formats
+  and private label, with samples or a quotation on request. The bridge is made
+  once, after value has been given, and is not repeated if the visitor declines.
 - **Scope:** the prompt is coffee-only. It allows general coffee knowledge
   (seeds and beans, origins, processing, roasting, brewing, storage) and the
   business's own services. Off-topic questions get one fixed refusal line and no
