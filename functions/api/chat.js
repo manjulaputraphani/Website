@@ -399,8 +399,8 @@ async function callClaude({
   let lastRoundHadText = false;
   const maxTokens =
     provider.name === "ollama"
-      ? Math.min(Math.max(Number(env.OLLAMA_MAX_TOKENS || 1200), 200), 2000)
-      : 400;
+      ? Math.min(Math.max(Number(env.OLLAMA_MAX_TOKENS || 5000), 200), 5000)
+      : Math.min(Math.max(Number(env.ANTHROPIC_MAX_TOKENS || 5000), 200), 5000);
 
   for (let round = 0; round < 2; round += 1) {
     let roundHadText = false;
