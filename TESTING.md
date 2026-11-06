@@ -114,12 +114,35 @@ Open <http://localhost:8788> and click the **Chamundi launcher**.
 
 **Visitor**
 
-> Yes, I would like samples.
+> I want samples
 
 **Expected**
 
 - The bot starts the existing lead capture flow, one question at a time.
 - It does not quote a price or promise a delivery date.
+
+**Visitor**
+
+> I need roasted beans for my café
+
+**Expected**
+
+- A short, friendly answer about roasted beans and customisation.
+- It asks for one business detail, starting with the visitor's name.
+- It does not present a form or ask for several fields at once.
+
+**Visitor**
+
+> roasted beans
+
+**Expected**
+
+- A short answer, then one natural qualification: whether this is for a
+  business or for home use.
+- If the visitor says it is for business, it asks for their name and begins lead
+  capture.
+- If the visitor says home use, it keeps helping without collecting business
+  contact details.
 
 ## 2. Flavour recommendation
 

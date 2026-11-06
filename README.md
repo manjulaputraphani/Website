@@ -995,6 +995,13 @@ deploying.
   roasted coffee and can customise roast, grind, blend, packing, HoReCa formats
   and private label, with samples or a quotation on request. The bridge is made
   once, after value has been given, and is not repeated if the visitor declines.
+- **Details during the chat:** a product or buyer mention — green, roasted or
+  ground coffee, “I am a roaster”, a café or distributor, or a request for beans
+  — starts a light lead capture. Chamundi answers briefly, then asks one detail
+  at a time, beginning with the visitor’s name. If it is unclear whether the
+  interest is personal or business, it asks “Is this for your business or for
+  home use?” and stops collecting business details for a home brewer or a
+  visitor who is only browsing.
 - **Scope:** the prompt is coffee-only. It allows general coffee knowledge
   (seeds and beans, origins, processing, roasting, brewing, storage) and the
   business's own services. Off-topic questions get one fixed refusal line and no
