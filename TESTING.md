@@ -8,7 +8,7 @@ npx wrangler d1 execute sdhhe-leads --local --file=./schema.sql
 npx wrangler pages dev . --port 8788
 ```
 
-Open <http://localhost:8788> and click **Ask Chamundi**.
+Open <http://localhost:8788> and click the **Chamundi launcher**.
 
 ## 1. Origin comparison
 
@@ -240,9 +240,11 @@ pixels with `data-mode="dark"`, one for each theme:
 - `chamundi-cherry-dark-mobile.png`
 - `chamundi-estate-dark-mobile.png`
 
-They show the Shatkona launcher/header/avatar, the repeating Shatkona message
-pattern, the 10% header strip, the greeting and quick replies. The panel fills
-the viewport with 16 px content gutters and no horizontal overflow.
+They show the current symbol in the launcher/header, the symbol name and six
+jump dots, the repeating mask-image symbol pattern, the 10% header strip, the
+greeting and quick replies. The panel fills the viewport with 16 px content
+gutters and no horizontal overflow. The screenshots are captured at the initial
+Shatkona state; the widget cycles through all six symbols.
 These local captures use the Turnstile site-key placeholder, so the verification
 strip is not shown. In production the Turnstile strip appears above the composer
 until the visitor completes verification.
@@ -269,22 +271,33 @@ Manual checks for each theme:
 7. Confirm focus rings are visible on the close button, input, send button and
    quick replies.
 8. Switch theme while the panel is open; colours must update without a reload.
-9. Confirm the Shatkona appears at 42 px in the 64 × 64 launcher, 28 px in the
-   header, 20 px beside each Chamundi message, and three times in the typing
-   indicator.
-10. Confirm the message area pattern is a 48 × 96 tiled Shatkona with a
-    half-tile brick offset, at 6% (light) or 8% (dark) accent and no trishul.
-    Confirm the header strip uses the same motif at 10%.
-11. Confirm the launcher triangles rotate once every 24 seconds and speed up to
-    6 seconds on hover; the central trishul stays upright. The header Shatkona
-    draws in once over 800 ms when the panel opens.
-12. Enable reduced motion and confirm the launcher, header, typing and cursor
-    animations are off and the header icon remains visible.
+9. Confirm the screen saver cycles in order every 5 seconds: Shatkona, Surya,
+   Ashtakona, Lotus, Durga Yantra, Trishul, then back to Shatkona. The launcher
+   symbol and header symbol must change together, and the header label must
+   update to the current symbol name.
+10. Confirm the six header dots update, the current dot is filled with
+    `var(--accent)`, and clicking a dot jumps to that symbol and restarts the
+    5-second interval.
+11. Confirm the launcher is 64 × 64 with a 42 px symbol; the header symbol is
+    28 px. Confirm the launcher has the accessible label “Open Chamundi chat”.
+12. Confirm the symbol transition is a 700 ms crossfade plus scale, and the
+    active symbol drifts 6° over 5 seconds while its trishul stays upright.
+    The full Trishul symbol stays upright.
+13. Confirm the message-area mask pattern is the current symbol on 48 px tiles at
+    6% light / 9% dark, and the header strip uses the same current symbol at 10%.
+    The pattern must crossfade with the symbol.
+14. Hover the launcher and confirm cycling and the 6° drift pause; move away and
+    confirm they resume. Hide the tab and confirm cycling pauses; return and
+    confirm it resumes.
+15. Enable reduced motion and confirm symbols change instantly every 10 seconds,
+    with no crossfade, drift, launcher rotation, typing or cursor animation.
+16. Confirm the automatic cycling does not move focus or announce the symbol
+    changes. The SVGs must be `aria-hidden`; the dots are labelled buttons.
 
 ## 9. Accessibility and keyboard checks
 
-- Tab to **Ask Chamundi**, press Enter. The dialog opens and focus moves to the
-  close button.
+- Tab to the **Open Chamundi chat** launcher, press Enter. The dialog opens and
+  focus moves to the close button.
 - Tab cycles only inside the panel. Shift+Tab from the first control wraps to
   the last.
 - Escape closes the panel and returns focus to the launcher.

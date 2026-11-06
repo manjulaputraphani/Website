@@ -19,6 +19,123 @@
   var STORE_PASS = "chamundi.pass.v1";
   var STORE_LEAD = "chamundi.lead.v1";
 
+  var TRISHUL_PATHS = [
+    "M50 14 L50 88",
+    "M50 14 L45 26 M50 14 L55 26",
+    "M28 24 C28 42 37 50 50 50 C63 50 72 42 72 24",
+    "M28 24 L24 32 M28 24 L33 31 M72 24 L76 32 M72 24 L67 31",
+    "M43 58 L57 58 M44 64 L56 64"
+  ];
+
+  function line(x1, y1, x2, y2) {
+    return { tag: "line", x1: x1, y1: y1, x2: x2, y2: y2 };
+  }
+
+  function lotusBody() {
+    var body = [];
+    [0, 45, 90, 135, 180, 225, 270, 315].forEach(function (angle) {
+      var ellipse = { tag: "ellipse", cx: "50", cy: "24", rx: "8", ry: "17" };
+      if (angle) ellipse.transform = "rotate(" + angle + " 50 50)";
+      body.push(ellipse);
+    });
+    body.push({ tag: "circle", cx: "50", cy: "50", r: "9" });
+    return body;
+  }
+
+  function yantraBody() {
+    var body = [
+      { tag: "rect", x: "6", y: "6", width: "88", height: "88" },
+      { tag: "circle", cx: "50", cy: "50", r: "38" }
+    ];
+    [0, 45, 90, 135, 180, 225, 270, 315].forEach(function (angle) {
+      body.push({
+        tag: "ellipse",
+        cx: "50",
+        cy: "17",
+        rx: "5",
+        ry: "9",
+        transform: "rotate(" + angle + " 50 50)"
+      });
+    });
+    body.push({ tag: "circle", cx: "50", cy: "50", r: "28" });
+    body.push({ tag: "path", d: "M50 26 L71 63 L29 63 Z" });
+    body.push({ tag: "path", d: "M50 74 L71 37 L29 37 Z" });
+    body.push({ tag: "path", d: "M50 36 L62 57 L38 57 Z" });
+    body.push({ tag: "circle", cx: "50", cy: "50", r: "2", fill: "currentColor" });
+    return body;
+  }
+
+  var SYMBOLS = [
+    {
+      name: "SHATKONA · SHIVA–SHAKTI",
+      aria: "Shatkona",
+      body: [
+        { tag: "path", d: "M50 8 L86.4 71 L13.6 71 Z" },
+        { tag: "path", d: "M50 92 L86.4 29 L13.6 29 Z" }
+      ],
+      trishul: { transform: "translate(31 31) scale(.38)" }
+    },
+    {
+      name: "SURYA · EIGHT-RAY SUN",
+      aria: "Surya",
+      body: [
+        { tag: "circle", cx: "50", cy: "50", r: "26" },
+        line("50", "19", "50", "3"),
+        line("61.9", "21.4", "65.3", "13"),
+        line("71.9", "28.1", "83.2", "16.8"),
+        line("78.6", "38.1", "87", "34.7"),
+        line("81", "50", "97", "50"),
+        line("78.6", "61.9", "87", "65.3"),
+        line("71.9", "71.9", "83.2", "83.2"),
+        line("61.9", "78.6", "65.3", "87"),
+        line("50", "81", "50", "97"),
+        line("38.1", "78.6", "34.7", "87"),
+        line("28.1", "71.9", "16.8", "83.2"),
+        line("21.4", "61.9", "13", "65.3"),
+        line("19", "50", "3", "50"),
+        line("21.4", "38.1", "13", "34.7"),
+        line("28.1", "28.1", "16.8", "16.8"),
+        line("38.1", "21.4", "34.7", "13")
+      ],
+      trishul: { transform: "translate(29 29) scale(.42)" }
+    },
+    {
+      name: "ASHTAKONA · EIGHT-POINTED STAR",
+      aria: "Ashtakona",
+      body: [
+        { tag: "rect", x: "22", y: "22", width: "56", height: "56" },
+        { tag: "rect", x: "22", y: "22", width: "56", height: "56", transform: "rotate(45 50 50)" },
+        { tag: "circle", cx: "50", cy: "50", r: "18" }
+      ],
+      trishul: { transform: "translate(34 34) scale(.32)" }
+    },
+    {
+      name: "LOTUS · EIGHT PETALS",
+      aria: "Lotus",
+      body: lotusBody(),
+      trishul: null
+    },
+    {
+      name: "DURGA YANTRA · SACRED GEOMETRY",
+      aria: "Durga Yantra",
+      body: yantraBody(),
+      trishul: null
+    },
+    {
+      name: "TRISHUL · SHAKTI",
+      aria: "Trishul",
+      body: [],
+      trishul: { transform: "" }
+    }
+  ];
+
+  var symbolIndex = 0;
+  var symbolTimer = null;
+  var symbolPaused = false;
+  var hoverPaused = false;
+  var patternLayer = "a";
+  var reducedMotionQuery = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+
   var BUYER_LABELS = {
     roaster: "Roaster",
     distributor: "Distributor",
@@ -74,6 +191,7 @@
     ensureStylesheet();
     buildUI();
     wireEvents();
+    initSymbolScreen();
 
     addMessage("assistant", GREETING);
     state.messages.forEach(function (message) {
@@ -141,54 +259,140 @@
 
   function svgEl(tag, attrs) {
     var node = document.createElementNS("http://www.w3.org/2000/svg", tag);
-    Object.keys(attrs).forEach(function (key) {
+    Object.keys(attrs || {}).forEach(function (key) {
       node.setAttribute(key, attrs[key]);
     });
     return node;
   }
 
-  function shatkonaIcon(className) {
+  function ensureTrishulDefs() {
+    if (document.getElementById("cm-trishul")) return;
+    var sprite = svgEl("svg", {
+      width: "0",
+      height: "0",
+      "aria-hidden": "true",
+      focusable: "false"
+    });
+    sprite.setAttribute("class", "chamundi-symbol-sprite");
+    var defs = svgEl("defs");
+    var group = svgEl("g", { id: "cm-trishul", "stroke-width": "3" });
+    TRISHUL_PATHS.forEach(function (d) {
+      group.appendChild(svgEl("path", { d: d }));
+    });
+    defs.appendChild(group);
+    sprite.appendChild(defs);
+    document.body.appendChild(sprite);
+  }
+
+  function createPrimitive(primitive) {
+    var attrs = {};
+    Object.keys(primitive).forEach(function (key) {
+      if (key !== "tag") attrs[key] = primitive[key];
+    });
+    return svgEl(primitive.tag, attrs);
+  }
+
+  function buildSymbol(symbol, className) {
     var svg = svgEl("svg", {
       viewBox: "0 0 100 100",
       fill: "none",
       stroke: "currentColor",
       "stroke-width": "2.4",
-      "stroke-linejoin": "round",
       "stroke-linecap": "round",
+      "stroke-linejoin": "round",
       "aria-hidden": "true",
       focusable: "false"
     });
-    svg.setAttribute("class", className ? "chamundi-shatkona " + className : "chamundi-shatkona");
+    svg.setAttribute("class", className || "cm-symbol");
 
-    var triangles = svgEl("g", { class: "chamundi-shatkona__triangles" });
-    [
-      "M50 8 L86.4 71 L13.6 71 Z",
-      "M50 92 L86.4 29 L13.6 29 Z"
-    ].forEach(function (d) {
-      triangles.appendChild(svgEl("path", { d: d }));
+    var body = svgEl("g", { class: "cm-symbol__body" });
+    symbol.body.forEach(function (primitive) {
+      body.appendChild(createPrimitive(primitive));
     });
-    svg.appendChild(triangles);
+    svg.appendChild(body);
 
-    var trishul = svgEl("g", {
-      class: "chamundi-shatkona__trishul",
-      transform: "translate(31 31) scale(.38)",
-      "stroke-width": "3"
-    });
-    [
-      "M50 14 L50 88",
-      "M50 14 L45 26 M50 14 L55 26",
-      "M28 24 C28 42 37 50 50 50 C63 50 72 42 72 24",
-      "M28 24 L24 32 M28 24 L33 31 M72 24 L76 32 M72 24 L67 31",
-      "M43 58 L57 58 M44 64 L56 64"
-    ].forEach(function (d) {
-      trishul.appendChild(svgEl("path", { d: d }));
-    });
-    svg.appendChild(trishul);
+    if (symbol.trishul) {
+      var trishul = svgEl("g", {
+        class: "cm-symbol__trishul",
+        "stroke-width": "3"
+      });
+      if (symbol.trishul.transform) {
+        trishul.setAttribute("transform", symbol.trishul.transform);
+      }
+      trishul.appendChild(svgEl("use", { href: "#cm-trishul" }));
+      svg.appendChild(trishul);
+    }
 
     return svg;
   }
 
+  function buildSymbolStack(modifier) {
+    var stack = el("div", "cm-symbol-stack " + modifier);
+    SYMBOLS.forEach(function (symbol, index) {
+      var svg = buildSymbol(symbol, "cm-symbol");
+      if (index === 0) svg.classList.add("is-active");
+      stack.appendChild(svg);
+    });
+    return stack;
+  }
+
+  function buildSymbolDots() {
+    var wrap = el("div", "chamundi-symbol-dots");
+    SYMBOLS.forEach(function (symbol, index) {
+      var dot = el("button", "chamundi-symbol-dot");
+      dot.type = "button";
+      dot.setAttribute("aria-label", "Show " + symbol.aria + " symbol");
+      dot.setAttribute("aria-pressed", index === 0 ? "true" : "false");
+      if (index === 0) dot.classList.add("is-active");
+      dot.addEventListener("click", function () {
+        jumpSymbol(index);
+      });
+      wrap.appendChild(dot);
+    });
+    return wrap;
+  }
+
+  function primitiveToMarkup(primitive) {
+    var attrs = [];
+    Object.keys(primitive).forEach(function (key) {
+      if (key === "tag") return;
+      var value = primitive[key];
+      if (key === "fill" && value === "currentColor") value = "white";
+      attrs.push(key + "='" + value + "'");
+    });
+    return "<" + primitive.tag + (attrs.length ? " " + attrs.join(" ") : "") + "/>";
+  }
+
+  function maskSvg(symbol) {
+    var body = symbol.body.map(primitiveToMarkup).join("");
+    if (symbol.trishul) {
+      var transform = symbol.trishul.transform ? " transform='" + symbol.trishul.transform + "'" : "";
+      body += "<g" + transform + " stroke-width='3'>" +
+        TRISHUL_PATHS.map(function (d) { return "<path d='" + d + "'/>"; }).join("") +
+        "</g>";
+    }
+    return "<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 100 100' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'>" + body + "</svg>";
+  }
+
+  function maskDataUri(symbol) {
+    var svg = maskSvg(symbol)
+      .replace(/%/g, "%25")
+      .replace(/</g, "%3C")
+      .replace(/>/g, "%3E")
+      .replace(/#/g, "%23");
+    return "url(\"data:image/svg+xml," + svg + "\")";
+  }
+
+  function prepareSymbolMasks() {
+    SYMBOLS.forEach(function (symbol) {
+      symbol.mask = maskDataUri(symbol);
+    });
+  }
+
   function buildUI() {
+    ensureTrishulDefs();
+    prepareSymbolMasks();
+
     var root = el("div", "chamundi-root");
     var panel = el("section", "chamundi-panel");
     panel.id = "chamundi-panel";
@@ -200,8 +404,10 @@
     var header = el("header", "chamundi-header");
     var brand = el("div", "chamundi-brand");
     var headerMark = el("span", "chamundi-header__mark");
-    headerMark.setAttribute("aria-hidden", "true");
-    headerMark.appendChild(shatkonaIcon("chamundi-header__shatkona"));
+    var headerStack = buildSymbolStack("cm-symbol-stack--header");
+    headerMark.appendChild(headerStack);
+    var dotsWrap = buildSymbolDots();
+    headerMark.appendChild(dotsWrap);
     var brandText = el("div", "chamundi-brand__text");
     var title = el("h2", "chamundi-title", "Chamundi");
     title.id = "chamundi-title";
@@ -213,8 +419,10 @@
     status.appendChild(statusDesk);
     status.appendChild(statusDot);
     status.appendChild(statusText);
+    var symbolName = el("p", "chamundi-symbol-name", SYMBOLS[0].name);
     brandText.appendChild(title);
     brandText.appendChild(status);
+    brandText.appendChild(symbolName);
     brand.appendChild(headerMark);
     brand.appendChild(brandText);
 
@@ -226,12 +434,14 @@
     header.appendChild(brand);
     header.appendChild(close);
 
-    var log = el("div", "chamundi-log chamundi-messages");
+    var messages = el("div", "chamundi-messages");
+    var log = el("div", "chamundi-log");
     log.setAttribute("role", "log");
     log.setAttribute("aria-live", "polite");
     log.setAttribute("aria-relevant", "additions text");
     log.setAttribute("aria-label", "Conversation with Chamundi");
     log.setAttribute("tabindex", "0");
+    messages.appendChild(log);
 
     var typing = el("div", "chamundi-typing");
     typing.hidden = true;
@@ -239,7 +449,7 @@
     for (var i = 0; i < 3; i += 1) {
       var star = el("span", "chamundi-typing__star");
       star.setAttribute("aria-hidden", "true");
-      star.appendChild(shatkonaIcon("chamundi-typing__star-icon"));
+      star.appendChild(buildSymbol(SYMBOLS[0], "chamundi-shatkona chamundi-typing__star-icon"));
       typing.appendChild(star);
     }
     var typingSr = el("span", "chamundi-sr-only", "Chamundi is typing.");
@@ -300,7 +510,7 @@
     footer.appendChild(ai);
 
     panel.appendChild(header);
-    panel.appendChild(log);
+    panel.appendChild(messages);
     panel.appendChild(jump);
     panel.appendChild(compose);
     panel.appendChild(footer);
@@ -309,10 +519,11 @@
 
     var launcher = el("button", "chamundi-launcher");
     launcher.type = "button";
-    launcher.setAttribute("aria-label", "Ask Chamundi, the coffee trade desk assistant");
+    launcher.setAttribute("aria-label", "Open Chamundi chat");
     launcher.setAttribute("aria-expanded", "false");
     launcher.setAttribute("aria-controls", "chamundi-panel");
-    launcher.appendChild(shatkonaIcon("chamundi-launcher__icon"));
+    var launcherStack = buildSymbolStack("cm-symbol-stack--launcher");
+    launcher.appendChild(launcherStack);
 
     root.appendChild(launcher);
     root.appendChild(panel);
@@ -324,6 +535,7 @@
       panel: panel,
       close: close,
       log: log,
+      messages: messages,
       typing: typing,
       jump: jump,
       compose: compose,
@@ -338,6 +550,9 @@
       person: person,
       whatsapp: whatsapp,
       statusText: statusText,
+      symbolLabel: symbolName,
+      symbolStacks: [headerStack, launcherStack],
+      symbolDots: Array.prototype.slice.call(dotsWrap.children),
       chips: null,
       leadCardEl: null
     };
@@ -349,6 +564,26 @@
 
   function wireEvents() {
     ui.launcher.addEventListener("click", openPanel);
+    ui.launcher.addEventListener("mouseenter", function () {
+      hoverPaused = true;
+      updateSymbolPause();
+    });
+    ui.launcher.addEventListener("mouseleave", function () {
+      hoverPaused = false;
+      updateSymbolPause();
+    });
+    document.addEventListener("visibilitychange", updateSymbolPause);
+    if (reducedMotionQuery) {
+      if (reducedMotionQuery.addEventListener) {
+        reducedMotionQuery.addEventListener("change", function () {
+          if (!symbolPaused) restartSymbolTimer();
+        });
+      } else if (reducedMotionQuery.addListener) {
+        reducedMotionQuery.addListener(function () {
+          if (!symbolPaused) restartSymbolTimer();
+        });
+      }
+    }
     ui.close.addEventListener("click", closePanel);
     ui.form.addEventListener("submit", function (event) {
       event.preventDefault();
@@ -399,6 +634,98 @@
     }
     window.addEventListener("pagehide", saveHistory);
     window.Chamundi = { open: openPanel, close: closePanel };
+  }
+
+  /* ============================================================
+     Symbol screen saver
+     ============================================================ */
+
+  function initSymbolScreen() {
+    updateSymbolUI(0);
+    setPattern(0, true);
+    updateSymbolPause();
+    if (!symbolPaused) startSymbolTimer();
+  }
+
+  function updateSymbolUI(index) {
+    symbolIndex = index;
+    ui.symbolStacks.forEach(function (stack) {
+      Array.prototype.forEach.call(stack.children, function (svg, svgIndex) {
+        svg.classList.toggle("is-active", svgIndex === index);
+      });
+    });
+    ui.symbolLabel.textContent = SYMBOLS[index].name;
+    ui.symbolDots.forEach(function (dot, dotIndex) {
+      var active = dotIndex === index;
+      dot.classList.toggle("is-active", active);
+      dot.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+  }
+
+  function setSymbol(index, restartTimer) {
+    var next = ((index % SYMBOLS.length) + SYMBOLS.length) % SYMBOLS.length;
+    updateSymbolUI(next);
+    setPattern(next, false);
+    if (restartTimer) restartSymbolTimer();
+  }
+
+  function jumpSymbol(index) {
+    setSymbol(index, true);
+  }
+
+  function setPattern(index, initial) {
+    var mask = SYMBOLS[index].mask || maskDataUri(SYMBOLS[index]);
+    if (initial) {
+      ui.root.style.setProperty("--cm-mask-a", mask);
+      ui.root.classList.add("is-pattern-a");
+      patternLayer = "a";
+      return;
+    }
+    if (patternLayer === "a") {
+      ui.root.style.setProperty("--cm-mask-b", mask);
+      ui.root.classList.remove("is-pattern-a");
+      ui.root.classList.add("is-pattern-b");
+      patternLayer = "b";
+    } else {
+      ui.root.style.setProperty("--cm-mask-a", mask);
+      ui.root.classList.remove("is-pattern-b");
+      ui.root.classList.add("is-pattern-a");
+      patternLayer = "a";
+    }
+  }
+
+  function startSymbolTimer() {
+    if (symbolPaused) return;
+    if (symbolTimer) window.clearInterval(symbolTimer);
+    var interval = prefersReducedMotion() ? 10000 : 5000;
+    symbolTimer = window.setInterval(function () {
+      if (symbolPaused) return;
+      setSymbol(symbolIndex + 1, false);
+    }, interval);
+  }
+
+  function restartSymbolTimer() {
+    if (symbolTimer) window.clearInterval(symbolTimer);
+    symbolTimer = null;
+    startSymbolTimer();
+  }
+
+  function updateSymbolPause() {
+    var shouldPause = hoverPaused || document.hidden;
+    if (shouldPause) {
+      if (!symbolPaused) {
+        symbolPaused = true;
+        if (symbolTimer) window.clearInterval(symbolTimer);
+        symbolTimer = null;
+        ui.root.classList.add("is-symbol-paused");
+      }
+      return;
+    }
+    if (symbolPaused) {
+      symbolPaused = false;
+      ui.root.classList.remove("is-symbol-paused");
+      restartSymbolTimer();
+    }
   }
 
   function openPanel() {
@@ -959,7 +1286,7 @@
     if (role === "assistant") {
       var avatar = el("span", "chamundi-msg__avatar");
       avatar.setAttribute("aria-hidden", "true");
-      avatar.appendChild(shatkonaIcon("chamundi-msg__avatar-icon"));
+      avatar.appendChild(buildSymbol(SYMBOLS[0], "chamundi-shatkona chamundi-msg__avatar-icon"));
       row.appendChild(avatar);
     }
     var bubble = el("div", "chamundi-bubble");
