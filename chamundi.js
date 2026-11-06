@@ -312,7 +312,6 @@
     launcher.setAttribute("aria-label", "Ask Chamundi, the coffee trade desk assistant");
     launcher.setAttribute("aria-expanded", "false");
     launcher.setAttribute("aria-controls", "chamundi-panel");
-    launcher.setAttribute("title", "Ask Chamundi");
     launcher.appendChild(shatkonaIcon("chamundi-launcher__icon"));
 
     root.appendChild(launcher);

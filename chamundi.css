@@ -45,6 +45,37 @@
     border-color var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1));
 }
 
+.chamundi-launcher::after {
+  content: "Ask Chamundi";
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 10px);
+  padding: 6px 8px;
+  border: 1px solid var(--accent, #9a7330);
+  background: var(--deep, #2b1a12);
+  color: var(--deep-ink, #f7efe4);
+  box-shadow: var(--shadow, 0 10px 24px rgba(43, 26, 18, .18));
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  line-height: 1.25;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(4px, -50%);
+  pointer-events: none;
+  transition:
+    opacity var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1)),
+    transform var(--speed, 220ms) var(--ease, cubic-bezier(.2, .7, .2, 1));
+}
+
+.chamundi-launcher:hover::after,
+.chamundi-launcher:focus-visible::after {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
 .chamundi-launcher:hover {
   transform: translateY(-2px);
   box-shadow: 0 0 18px var(--accent, #9a7330), var(--shadow, 0 18px 46px rgba(43, 26, 18, .22));
@@ -947,6 +978,10 @@ html[data-theme="estate"][data-mode="dark"] .chamundi-header::after { background
     height: 64px;
   }
 
+  .chamundi-launcher::after {
+    display: none;
+  }
+
   .chamundi-panel {
     inset: 0;
     width: 100%;
@@ -1030,6 +1065,10 @@ html[data-theme="estate"][data-mode="dark"] .chamundi-header::after { background
 
   .chamundi-launcher:hover {
     transform: none;
+  }
+
+  .chamundi-launcher::after {
+    transition: none !important;
   }
 
   .chamundi-launcher .chamundi-shatkona__triangles {
