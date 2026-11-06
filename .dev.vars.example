@@ -27,6 +27,8 @@ LEAD_FROM_EMAIL="Chamundi <leads@your-verified-domain.example>"
 # Optional: use Ollama cloud or a local Ollama server instead of Anthropic.
 # OLLAMA_API_KEY=replace-me
 # OLLAMA_MODEL=beam
+# OLLAMA_FAST_MODEL=beam
+# OLLAMA_REASONING_MODEL=deepseek-v4.1-flash:1017
 # OLLAMA_MAX_TOKENS=5000
 # CHAT_PROVIDER=ollama
 # OLLAMA_BASE_URL=https://ollama.com

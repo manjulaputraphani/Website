@@ -342,6 +342,46 @@ async function runChatStream({ env, sse, sessionId, messages, draft, sessionPass
   }
 }
 
+function latestUserText(messages) {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    if (messages[i] && messages[i].role === "user") {
+      return String(messages[i].content || "");
+    }
+  }
+  return "";
+}
+
+function selectOllamaModel(env, messages) {
+  const fast = String(env.OLLAMA_FAST_MODEL || env.OLLAMA_MODEL || "beam").trim() || "beam";
+  const reasoning =
+    String(env.OLLAMA_REASONING_MODEL || "deepseek-v4.1-flash:1017").trim() || fast;
+  const text = latestUserText(messages).trim();
+  const lower = text.toLowerCase();
+
+  if (!text || reasoning === fast) {
+    return { primary: fast, fallback: fast, reason: "single-model" };
+  }
+
+  if (
+    /^(hi|hello|hey|namaskara|namaste|good (morning|afternoon|evening)|thanks|thank you|ok|okay|yes|no|bye)[!. ]*$/.test(
+      lower
+    )
+  ) {
+    return { primary: fast, fallback: fast, reason: "greeting" };
+  }
+
+  const reasoningCues =
+    /(compare|comparison|difference|versus|\bvs\b|why|explain|analy[sz]e|plan|strategy|step[- ]by[- ]step|steps|troubleshoot|calculate|recommend|find my coffee|which|better|choose|blend|recipe|brew|roast|processing|ferment|defect|grade|screen|moisture|cupping|flavou?r|origin|export|import|contract|quotation|quote|sample|moq|shipping|price|cost|lead time|packaging|private label|horeca|ratio|grind|espresso|filter|french press|moka|cold brew|south indian|milk|\bbuy\b|supply|order|enquir|inquir)/;
+  const questionCount = (text.match(/\?/g) || []).length;
+  const looksStructured = /\n\s*[-*0-9]/.test(text);
+
+  if (reasoningCues.test(lower) || text.length > 180 || questionCount > 1 || looksStructured) {
+    return { primary: reasoning, fallback: fast, reason: "reasoning" };
+  }
+
+  return { primary: fast, fallback: fast, reason: "fast" };
+}
+
 function resolveProvider(env) {
   const requested = String(env.CHAT_PROVIDER || "").toLowerCase();
   const ollamaKey = env.OLLAMA_API_KEY || "";
@@ -392,6 +432,11 @@ async function callClaude({
   onSummary
 }) {
   const provider = resolveProvider(env);
+  const routing =
+    provider.name === "ollama"
+      ? selectOllamaModel(env, messages)
+      : { primary: provider.model, fallback: provider.model, reason: "provider-default" };
+  let activeModel = routing.primary;
   let currentDraft = draft;
   let claudeMessages = messages;
   let system = buildSystemPrompt(currentDraft, missingFields(currentDraft));
@@ -402,21 +447,48 @@ async function callClaude({
       ? Math.min(Math.max(Number(env.OLLAMA_MAX_TOKENS || 5000), 200), 5000)
       : Math.min(Math.max(Number(env.ANTHROPIC_MAX_TOKENS || 5000), 200), 5000);
 
-  for (let round = 0; round < 2; round += 1) {
-    let roundHadText = false;
-    const response = await fetch(provider.url, {
+  if (provider.name === "ollama") {
+    console.log("Chamundi model", activeModel, routing.reason);
+    await sse.send("meta", { model: activeModel, route: routing.reason });
+  }
+
+  const requestBody = (model, round) =>
+    JSON.stringify({
+      model: model,
+      max_tokens: maxTokens,
+      temperature: 0.3,
+      system,
+      messages: claudeMessages,
+      stream: true,
+      ...(round === 0 ? { tools: [LEAD_TOOL] } : {})
+    });
+
+  const sendModelRequest = (model, round) =>
+    fetch(provider.url, {
       method: "POST",
       headers: provider.headers,
-      body: JSON.stringify({
-        model: provider.model,
-        max_tokens: maxTokens,
-        temperature: 0.3,
-        system,
-        messages: claudeMessages,
-        stream: true,
-        ...(round === 0 ? { tools: [LEAD_TOOL] } : {})
-      })
+      body: requestBody(model, round)
     });
+
+  for (let round = 0; round < 2; round += 1) {
+    let roundHadText = false;
+    let response = await sendModelRequest(activeModel, round);
+
+    if (
+      !response.ok &&
+      provider.name === "ollama" &&
+      routing.fallback &&
+      activeModel !== routing.fallback
+    ) {
+      const detail = await response.text();
+      console.warn(
+        `Ollama model ${activeModel} failed (${response.status}); falling back to ${routing.fallback}`,
+        detail.slice(0, 300)
+      );
+      activeModel = routing.fallback;
+      await sse.send("meta", { model: activeModel, route: "fallback" });
+      response = await sendModelRequest(activeModel, round);
+    }
 
     if (!response.ok) {
       const detail = await response.text();

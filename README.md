@@ -719,10 +719,13 @@ promises delivery dates. When a visitor asks for a price, it says:
    first message.
 2. `/api/chat` verifies the Turnstile token, issues a short-lived HMAC-signed
    session pass, and rate-limits the request.
-3. The API sends the last 12 messages to the configured model provider. Anthropic
-   and Ollama Beam are both capped at 5000 output tokens; Beam's internal
-   thinking tokens count toward that budget. The live lead draft is stored in D1
-   so early answers survive the 12-message window.
+3. The API routes each question. Greetings, short follow-ups and simple facts
+   use `OLLAMA_FAST_MODEL` (Beam). Comparisons, how-to questions, troubleshooting,
+   trade terms and lead-capture questions use `OLLAMA_REASONING_MODEL`
+   (DeepSeek V4.1 Flash). If the reasoning model fails, the request falls back to
+   Beam automatically. Both models are capped at 5000 output tokens; Beam's
+   internal thinking tokens count toward that budget. The live lead draft is
+   stored in D1 so early answers survive the 12-message window.
 4. Claude calls the `save_lead` tool after each new lead field. The tool merges
    fields into the draft and returns `missing_fields` and `next_field`.
 5. When every required field is valid, the server emits a signed summary. The
@@ -839,7 +842,9 @@ Recommended or optional:
 | --- | --- | --- |
 | `CHAT_PROVIDER` | Variable | `anthropic` or `ollama`; auto-detects when omitted |
 | `ANTHROPIC_MODEL` | Variable | `claude-haiku-4-5` (default for Anthropic) |
-| `OLLAMA_MODEL` | Variable | `beam` (free promo) or `deepseek-v4.1-flash` with credits |
+| `OLLAMA_MODEL` | Variable | `beam` (fallback model) |
+| `OLLAMA_FAST_MODEL` | Variable | `beam` (greetings, short follow-ups and simple facts) |
+| `OLLAMA_REASONING_MODEL` | Variable | `deepseek-v4.1-flash:1017` (comparisons, how-to, troubleshooting, trade and lead-capture questions) |
 | `OLLAMA_MAX_TOKENS` | Variable | `5000` (default output cap for Ollama) |
 | `ANTHROPIC_MAX_TOKENS` | Variable | `5000` (default output cap for Anthropic) |
 | `OLLAMA_BASE_URL` | Variable | `https://ollama.com` (or a local Ollama URL) |
@@ -990,7 +995,10 @@ deploying.
   question, Chamundi answers briefly and then asks for the name before going
   deeper. Replies offer two or three practical options and one short follow-up
   question, and the bot stops adding information after two or three helpful
-  exchanges so it can ask about the visitor and their requirement.
+  exchanges so it can ask about the visitor and their requirement. How-to and
+  troubleshooting answers use short numbered steps with quantities, times and
+  checks; comparisons give a one-line recommendation followed by numbered
+  reasons.
 - **Brewing help:** answers give a ratio, grind, water temperature and time for
   filter/pour-over, French press, espresso, moka pot, South Indian filter or cold
   brew, plus one-variable taste fixes.
@@ -1016,12 +1024,13 @@ deploying.
   business's own services. Off-topic questions get one fixed refusal line and no
   answer. Medical/health advice, prices, stock claims and delivery-date promises
   are explicitly blocked.
-- **Model:** `ANTHROPIC_MODEL` defaults to `claude-haiku-4-5`. Any Claude model
-  can be used without changing code. The production Ollama option defaults to
-  `beam`, which is free until 9 November 2026; DeepSeek cloud models require
-  usage credits on the Ollama account. The output cap is 5000 tokens for both
-  Ollama and Anthropic. Ollama's Beam spends part of the output budget on
-  internal thinking, so a longer cap protects long replies from being cut off.
+- **Model:** `ANTHROPIC_MODEL` defaults to `claude-haiku-4-5`. The production
+  Ollama setup routes questions between `OLLAMA_FAST_MODEL=beam` and
+  `OLLAMA_REASONING_MODEL=deepseek-v4.1-flash:1017`. Greetings and short
+  follow-ups use Beam; comparisons, how-to questions, troubleshooting, trade
+  terms and lead capture use DeepSeek V4.1 Flash. If the reasoning model is
+  unavailable, the API falls back to Beam. The output cap is 5000 tokens for both
+  providers; Ollama's Beam spends part of the output budget on internal thinking.
 - **WhatsApp:** change `data-whatsapp` on the script tag, or set
   `window.SITE_CONFIG.whatsapp` before the widget loads. Leave it blank to hide
   the footer link.
