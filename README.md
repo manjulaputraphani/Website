@@ -983,11 +983,15 @@ deploying.
   non-negotiable rules. The `save_lead` schema is in the same file.
 - **Conversation style:** Chamundi is warm, friendly and conversational rather
   than a formal call-centre script. The first reply welcomes the visitor and asks
-  one easy question without selling. Replies offer two or three practical options
-  and one short follow-up question. A brewing answer gives a ratio, grind, water
-  temperature and time for filter/pour-over, French press, espresso, moka pot,
-  South Indian filter or cold brew, plus one-variable taste fixes. The greeting
-  is paired with six starter chips: Brewing guide, Find my coffee, Request
+  for their name, politely and formally. Once the name is known, it asks what
+  brings them to coffee — brewing, beans, an origin or a business requirement —
+  without selling first. Replies offer two or three practical options and one
+  short follow-up question, and the bot stops adding information after two or
+  three helpful exchanges so it can ask about the visitor and their requirement.
+- **Brewing help:** answers give a ratio, grind, water temperature and time for
+  filter/pour-over, French press, espresso, moka pot, South Indian filter or cold
+  brew, plus one-variable taste fixes.
+- **Starter chips:** six quick replies — Brewing guide, Find my coffee, Request
   samples, Compare origins, Export terms and Get a quote.
 - **Positive feedback and the soft bridge:** when a visitor says the cup was good,
   Chamundi suggests one or two refinements (grind, ratio, water, freshness, roast

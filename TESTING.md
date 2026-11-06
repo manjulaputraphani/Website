@@ -82,10 +82,20 @@ Open <http://localhost:8788> and click the **Chamundi launcher**.
 
 **Expected**
 
-- A warm, natural welcome — not “How may I assist you today?”
-- One easy question about what they brew with, what they enjoy, or what they
-  would like to explore.
-- No sales push in the first reply.
+- A warm, polite welcome.
+- A formal request for the visitor's name first.
+- No coffee question and no sales push in the same reply.
+
+**Visitor**
+
+> Asha
+
+**Expected**
+
+- Chamundi greets Asha by name.
+- It asks what brings her to coffee: brewing, beans, an origin or a business
+  requirement.
+- It does not ask for the name again.
 
 **Visitor**
 
@@ -95,7 +105,7 @@ Open <http://localhost:8788> and click the **Chamundi launcher**.
 
 - Two or three practical brewing options or steps.
 - Ratio, grind, water temperature and time, in plain language.
-- One short follow-up question about their setup or taste.
+- One short follow-up question about the setup or taste.
 - No price, stock or delivery claims.
 
 **Visitor**

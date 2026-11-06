@@ -10,7 +10,7 @@
   if (window.__chamundiLoaded) return;
   window.__chamundiLoaded = true;
 
-  var GREETING = "Namaskara. I'm Chamundi from Sri Durga HariHara Enterprises. Shall we talk coffee — brewing, beans, or finding the right cup for you?";
+  var GREETING = "Namaskara. I'm Chamundi from Sri Durga HariHara Enterprises. May I know your name, please?";
   var THANK_YOU = "Thank you. Our team will reply within one business day.";
   var MAX_INPUT = 2000;
   var MAX_HISTORY = 40;
